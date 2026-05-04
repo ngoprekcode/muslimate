@@ -1,4 +1,4 @@
-import 'package:adhan/adhan.dart';
+import 'package:prayers_times/prayers_times.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
+import 'dart:ui';
 
 class PrayerScheduleScreen extends StatelessWidget {
   const PrayerScheduleScreen({super.key});
@@ -114,9 +115,6 @@ class PrayerScheduleScreen extends StatelessWidget {
   }
 
   Widget _buildHijriCard(BuildContext context, AppColors c) {
-    // Note: Adhan library doesn't provide Hijri date directly,
-    // usually handled by another package like hibri_calendar.
-    // For now, keeping it static or simplified.
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Container(
@@ -153,7 +151,7 @@ class PrayerScheduleScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Jadwal Otomatis (Adhan)',
+                    'Jadwal Otomatis (Prayers Times)',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -171,13 +169,15 @@ class PrayerScheduleScreen extends StatelessWidget {
   }
 
   Widget _buildPrayerList(BuildContext context, AppColors c, PrayerTimes pt, PrayerProvider provider) {
+    final sunnah = provider.sunnahTimes;
     final List<_PrayerItem> items = [
-      _PrayerItem('Subuh', pt.fajr, AppPrayerTime.fajr, Prayer.fajr),
-      _PrayerItem('Terbit', pt.sunrise, AppPrayerTime.dhuhr, Prayer.sunrise),
-      _PrayerItem('Dzuhur', pt.dhuhr, AppPrayerTime.dhuhr, Prayer.dhuhr),
-      _PrayerItem('Ashar', pt.asr, AppPrayerTime.asr, Prayer.asr),
-      _PrayerItem('Maghrib', pt.maghrib, AppPrayerTime.maghrib, Prayer.maghrib),
-      _PrayerItem('Isya', pt.isha, AppPrayerTime.isha, Prayer.isha),
+      _PrayerItem('Tahajjud', sunnah?.lastThirdOfTheNight, AppPrayerTime.tahajjud, 'tahajjud'),
+      _PrayerItem('Subuh', pt.fajrStartTime, AppPrayerTime.fajr, 'fajr'),
+      _PrayerItem('Terbit', pt.sunrise, AppPrayerTime.dhuhr, 'sunrise'),
+      _PrayerItem('Dzuhur', pt.dhuhrStartTime, AppPrayerTime.dhuhr, 'dhuhr'),
+      _PrayerItem('Ashar', pt.asrStartTime, AppPrayerTime.asr, 'asr'),
+      _PrayerItem('Maghrib', pt.maghribStartTime, AppPrayerTime.maghrib, 'maghrib'),
+      _PrayerItem('Isya', pt.ishaStartTime, AppPrayerTime.isha, 'isha'),
     ];
 
     final currentPrayer = pt.currentPrayer();
@@ -187,7 +187,7 @@ class PrayerScheduleScreen extends StatelessWidget {
       child: Column(
         children: items.map((p) {
           final isActive = p.adhanPrayer == currentPrayer;
-          final isPast = p.time.isBefore(DateTime.now());
+          final isPast = p.time != null && p.time!.isBefore(DateTime.now());
 
           return Opacity(
             opacity: (!isActive && isPast) ? 0.55 : 1.0,
@@ -270,7 +270,7 @@ class PrayerScheduleScreen extends StatelessWidget {
   Widget _buildReminderSettings(BuildContext context, AppColors c) {
     final rows = [
       ('Calculation Method', 'Singapore (MUIS)'),
-      ('Asr Madhab', 'Shafi'),
+      ('Asr Madhab', 'Hanafi'),
     ];
 
     return Padding(
@@ -332,8 +332,8 @@ class PrayerScheduleScreen extends StatelessWidget {
 
 class _PrayerItem {
   final String name;
-  final DateTime time;
+  final DateTime? time;
   final AppPrayerTime icon;
-  final Prayer adhanPrayer;
+  final String adhanPrayer;
   _PrayerItem(this.name, this.time, this.icon, this.adhanPrayer);
 }

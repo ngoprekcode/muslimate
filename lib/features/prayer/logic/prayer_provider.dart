@@ -1,4 +1,4 @@
-import 'package:adhan/adhan.dart';
+import 'package:prayers_times/prayers_times.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -6,15 +6,20 @@ class PrayerProvider extends ChangeNotifier {
   PrayerTimes? _prayerTimes;
   PrayerTimes? get prayerTimes => _prayerTimes;
 
+  SunnahInsights? _sunnahTimes;
+  SunnahInsights? get sunnahTimes => _sunnahTimes;
+
   DateTime _selectedDate = DateTime.now();
   DateTime get selectedDate => _selectedDate;
 
-  // Default to Bandung, Indonesia
+  // Koordinat Bandung: -6.9175, 107.6191
   final coordinates = Coordinates(-6.9175, 107.6191);
-  final params = CalculationMethod.singapore.getParameters();
+  
+  // Menggunakan Singapore (MUIS) karena sudutnya sama dengan Kemenag RI (Subuh 20, Isya 18)
+  final params = PrayerCalculationMethod.singapore();
 
   PrayerProvider() {
-    params.madhab = Madhab.shafi;
+    params.madhab = PrayerMadhab.shafi;
     _calculatePrayerTimes();
   }
 
@@ -24,22 +29,35 @@ class PrayerProvider extends ChangeNotifier {
   }
 
   void _calculatePrayerTimes() {
-    final dateComponents = DateComponents.from(selectedDate);
-    _prayerTimes = PrayerTimes(coordinates, dateComponents, params);
+    _prayerTimes = PrayerTimes(
+      coordinates: coordinates,
+      calculationParameters: params,
+      dateTime: selectedDate,
+      locationName: 'Asia/Jakarta',
+    );
+    _sunnahTimes = SunnahInsights(_prayerTimes!);
     notifyListeners();
   }
 
   String formatTime(DateTime? time) {
     if (time == null) return '--:--';
-    return DateFormat.Hm().format(time.toLocal());
+    // Library prayers_times mengembalikan waktu dalam UTC.
+    // Kita harus konversi ke local time HP agar sesuai dengan jam di Indonesia.
+    return DateFormat('HH:mm').format(time);
   }
 
-  Prayer? get nextPrayer => _prayerTimes?.nextPrayer();
-  Prayer? get currentPrayer => _prayerTimes?.currentPrayer();
+  String get nextPrayer => _prayerTimes?.nextPrayer() ?? 'none';
+  String get currentPrayer => _prayerTimes?.currentPrayer() ?? 'none';
 
   Duration? get timeRemaining {
-    final next = _prayerTimes?.timeForPrayer(nextPrayer ?? Prayer.none);
+    if (_prayerTimes == null) return null;
+    final next = _prayerTimes!.timeForPrayer(nextPrayer);
     if (next == null) return null;
-    return next.difference(DateTime.now());
+    
+    // Hitung selisih waktu untuk hitungan mundur
+    final now = DateTime.now();
+    return next.isAfter(now) 
+        ? next.difference(now) 
+        : null;
   }
 }

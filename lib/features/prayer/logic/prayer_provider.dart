@@ -12,10 +12,7 @@ class PrayerProvider extends ChangeNotifier {
   DateTime _selectedDate = DateTime.now();
   DateTime get selectedDate => _selectedDate;
 
-  // Koordinat Bandung: -6.9175, 107.6191
   final coordinates = Coordinates(-6.9175, 107.6191);
-  
-  // Menggunakan Singapore (MUIS) karena sudutnya sama dengan Kemenag RI (Subuh 20, Isya 18)
   final params = PrayerCalculationMethod.singapore();
 
   PrayerProvider() {
@@ -24,7 +21,7 @@ class PrayerProvider extends ChangeNotifier {
   }
 
   void updateDate(DateTime date) {
-    _selectedDate = date;
+    _selectedDate = DateTime(date.year, date.month, date.day);
     _calculatePrayerTimes();
   }
 
@@ -32,32 +29,30 @@ class PrayerProvider extends ChangeNotifier {
     _prayerTimes = PrayerTimes(
       coordinates: coordinates,
       calculationParameters: params,
-      dateTime: selectedDate,
+      dateTime: _selectedDate,
       locationName: 'Asia/Jakarta',
     );
     _sunnahTimes = SunnahInsights(_prayerTimes!);
     notifyListeners();
   }
 
-  String formatTime(DateTime? time) {
-    if (time == null) return '--:--';
-    // Library prayers_times mengembalikan waktu dalam UTC.
-    // Kita harus konversi ke local time HP agar sesuai dengan jam di Indonesia.
-    return DateFormat('HH:mm').format(time);
+  DateTime? getTahajjudToday() {
+    if (_prayerTimes == null) return null;
+    final yesterday = PrayerTimes(
+      coordinates: coordinates,
+      calculationParameters: params,
+      dateTime: _selectedDate.subtract(const Duration(days: 1)),
+      locationName: 'Asia/Jakarta',
+    );
+    return SunnahInsights(yesterday).lastThirdOfTheNight;
   }
 
-  String get nextPrayer => _prayerTimes?.nextPrayer() ?? 'none';
-  String get currentPrayer => _prayerTimes?.currentPrayer() ?? 'none';
+  DateTime? getTahajjudTomorrow() {
+    return _sunnahTimes?.lastThirdOfTheNight;
+  }
 
-  Duration? get timeRemaining {
-    if (_prayerTimes == null) return null;
-    final next = _prayerTimes!.timeForPrayer(nextPrayer);
-    if (next == null) return null;
-    
-    // Hitung selisih waktu untuk hitungan mundur
-    final now = DateTime.now();
-    return next.isAfter(now) 
-        ? next.difference(now) 
-        : null;
+  String formatTime(DateTime? time) {
+    if (time == null) return '--:--';
+    return DateFormat('HH:mm').format(time);
   }
 }

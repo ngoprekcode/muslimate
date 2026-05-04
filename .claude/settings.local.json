@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:api.anthropic.com)",
+      "Bash(cp \"C:/Users/andifauzy/.claude/projects/C--Users-andifauzy-AndroidStudioProjects-muslimate/59f786e6-495f-45bb-8fbc-568f1927edb5/tool-results/webfetch-1777815483373-cfr192.bin\" /tmp/design.gz)",
+      "Bash(gunzip -f /tmp/design.gz)",
+      "Bash(ls /tmp/design*)",
+      "Read(//tmp/**)",
+      "Bash(tar xf *)",
+      "Bash(flutter pub *)",
+      "Bash(flutter analyze *)"
+    ]
+  }
+}

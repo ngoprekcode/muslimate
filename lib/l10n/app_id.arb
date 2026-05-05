@@ -1,0 +1,19 @@
+{
+  "qiblaTitle": "Cek Kiblat",
+  "qiblaSubtitle": "Arahkan ponsel Anda ke Ka'bah",
+  "qiblaLocation": "{location} • {bearing}° dari Utara",
+  "qiblaAligned": "✓ Lurus ke Kiblat",
+  "qiblaRotate": "{deg}° {dir}",
+  "qiblaRight": "ke kanan",
+  "qiblaLeft": "ke kiri",
+  "qiblaInstruction": "Putar ponsel perlahan hingga Ka'bah berada di puncak penanda emas.",
+  "qiblaTipTitle": "Tips kalibrasi: ",
+  "qiblaTipContent": "jauhkan dari benda logam, gerakkan ponsel membentuk angka 8 untuk akurasi terbaik.",
+  "qiblaPermissionDenied": "Izin lokasi ditolak",
+  "qiblaPermissionPermanentlyDenied": "Izin lokasi ditolak secara permanen",
+  "qiblaLoading": "Memuat lokasi...",
+  "north": "U",
+  "east": "T",
+  "south": "S",
+  "west": "B"
+}

@@ -1,0 +1,39 @@
+{
+  "qiblaTitle": "Qibla Finder",
+  "qiblaSubtitle": "Point your phone toward the Kaaba",
+  "qiblaLocation": "{location} • {bearing}° from North",
+  "@qiblaLocation": {
+    "placeholders": {
+      "location": {
+        "type": "String"
+      },
+      "bearing": {
+        "type": "String"
+      }
+    }
+  },
+  "qiblaAligned": "✓ Facing Qibla",
+  "qiblaRotate": "{deg}° {dir}",
+  "@qiblaRotate": {
+    "placeholders": {
+      "deg": {
+        "type": "String"
+      },
+      "dir": {
+        "type": "String"
+      }
+    }
+  },
+  "qiblaRight": "to the right",
+  "qiblaLeft": "to the left",
+  "qiblaInstruction": "Slowly rotate your phone until the Kaaba is at the peak of the gold marker.",
+  "qiblaTipTitle": "Calibration tips: ",
+  "qiblaTipContent": "keep away from metal objects, move your phone in a figure-8 pattern for best accuracy.",
+  "qiblaPermissionDenied": "Location permission denied",
+  "qiblaPermissionPermanentlyDenied": "Location permission permanently denied",
+  "qiblaLoading": "Loading location...",
+  "north": "N",
+  "east": "E",
+  "south": "S",
+  "west": "W"
+}

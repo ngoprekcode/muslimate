@@ -35,5 +35,21 @@
   "north": "N",
   "east": "E",
   "south": "S",
-  "west": "W"
+  "west": "W",
+
+  "locPermScreenTitle": "Location Access",
+  "locPermAllowBtn": "Allow Location",
+  "locPermRetryBtn": "Allow Again",
+  "locPermSettingsBtn": "Open Settings",
+  "locPermManualBtn": "Choose City Manually",
+  "locPermKiblatTitle": "Qibla Direction",
+  "locPermKiblatDesc": "Allow location access so we can calculate the accurate Qibla direction from your position.",
+  "locPermJadwalTitle": "Prayer Schedule",
+  "locPermJadwalDesc": "Allow location access so we can calculate precise prayer times for your area.",
+  "locPermMasjidTitle": "Nearby Mosque",
+  "locPermMasjidDesc": "Allow location access so we can find mosques near you.",
+  "locPermDeniedTitle": "Permission Denied",
+  "locPermDeniedDesc": "You declined location access. You can try again or choose your city manually.",
+  "locPermBlockedTitle": "Location Blocked",
+  "locPermBlockedDesc": "Location access is blocked in your device settings. Open Settings to enable it, or choose your city manually."
 }

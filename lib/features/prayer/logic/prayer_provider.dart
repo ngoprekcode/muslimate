@@ -1,6 +1,7 @@
 import 'package:prayers_times/prayers_times.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:geocoding/geocoding.dart';
 
 class PrayerProvider extends ChangeNotifier {
   PrayerTimes? _prayerTimes;
@@ -12,11 +13,39 @@ class PrayerProvider extends ChangeNotifier {
   DateTime _selectedDate = DateTime.now();
   DateTime get selectedDate => _selectedDate;
 
-  final coordinates = Coordinates(-6.9175, 107.6191);
+  Coordinates? _coordinates;
+  Coordinates? get coordinates => _coordinates;
+
+  String _locationName = 'Mencari lokasi...';
+  String get locationName => _locationName;
+
   final params = PrayerCalculationMethod.singapore();
 
   PrayerProvider() {
     params.madhab = PrayerMadhab.shafi;
+  }
+
+  Future<void> updateLocation(double lat, double lng, {String? name}) async {
+    _coordinates = Coordinates(lat, lng);
+    if (name != null) {
+      _locationName = name;
+    } else {
+      _locationName = 'Mencari alamat...';
+      notifyListeners();
+      try {
+        List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+        if (placemarks.isNotEmpty) {
+          final p = placemarks.first;
+          // Format: "Kecamatan, Kota" atau yang tersedia
+          final subLocality = p.subLocality ?? '';
+          final locality = p.locality ?? '';
+          _locationName = [subLocality, locality].where((s) => s.isNotEmpty).join(', ');
+          if (_locationName.isEmpty) _locationName = 'Lokasi Terdeteksi';
+        }
+      } catch (_) {
+        _locationName = 'Lokasi Terdeteksi';
+      }
+    }
     _calculatePrayerTimes();
   }
 
@@ -26,8 +55,9 @@ class PrayerProvider extends ChangeNotifier {
   }
 
   void _calculatePrayerTimes() {
+    if (_coordinates == null) return;
     _prayerTimes = PrayerTimes(
-      coordinates: coordinates,
+      coordinates: _coordinates!,
       calculationParameters: params,
       dateTime: _selectedDate,
       locationName: 'Asia/Jakarta',
@@ -37,9 +67,9 @@ class PrayerProvider extends ChangeNotifier {
   }
 
   DateTime? getTahajjudToday() {
-    if (_prayerTimes == null) return null;
+    if (_prayerTimes == null || _coordinates == null) return null;
     final yesterday = PrayerTimes(
-      coordinates: coordinates,
+      coordinates: _coordinates!,
       calculationParameters: params,
       dateTime: _selectedDate.subtract(const Duration(days: 1)),
       locationName: 'Asia/Jakarta',

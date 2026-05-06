@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:muslimate/features/location/ui/location_permission_screen.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
-import 'dart:ui';
 
 class PrayerScheduleScreen extends StatelessWidget {
   const PrayerScheduleScreen({super.key});
@@ -15,13 +16,24 @@ class PrayerScheduleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final prayerProvider = context.watch<PrayerProvider>();
+
+    if (prayerProvider.coordinates == null) {
+      return LocationPermissionScreen(
+        feature: LocationFeature.jadwal,
+        onGranted: (pos) {
+          prayerProvider.updateLocation(
+            pos.latitude,
+            pos.longitude,
+          );
+        },
+      );
+    }
+
     final pt = prayerProvider.prayerTimes;
 
     if (pt == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
-    final formattedDate = DateFormat('EEEE, d MMMM yyyy').format(prayerProvider.selectedDate);
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -30,15 +42,30 @@ class PrayerScheduleScreen extends StatelessWidget {
           children: [
             AppScreenHeader(
               title: 'Jadwal Shalat',
-              subtitle: 'Bandung • $formattedDate',
-              trailing: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: c.surfaceAlt,
-                  borderRadius: BorderRadius.circular(10),
+              subtitle: prayerProvider.locationName,
+              trailing: GestureDetector(
+                onTap: () async {
+                  try {
+                    final pos = await Geolocator.getCurrentPosition();
+                    prayerProvider.updateLocation(
+                      pos.latitude,
+                      pos.longitude,
+                    );
+                  } catch (_) {}
+                },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: c.surfaceAlt,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.location_on_outlined,
+                    color: c.ink,
+                    size: 18,
+                  ),
                 ),
-                child: Icon(Icons.location_on_outlined, color: c.ink, size: 18),
               ),
             ),
             Expanded(
@@ -58,7 +85,11 @@ class PrayerScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDayStrip(BuildContext context, AppColors c, PrayerProvider provider) {
+  Widget _buildDayStrip(
+    BuildContext context,
+    AppColors c,
+    PrayerProvider provider,
+  ) {
     final now = DateTime.now();
     return SizedBox(
       height: 74,
@@ -68,7 +99,7 @@ class PrayerScheduleScreen extends StatelessWidget {
         itemCount: 7,
         separatorBuilder: (_, __) => const SizedBox(width: 6),
         itemBuilder: (context, i) {
-          final date = now.add(Duration(days: i - 2)); 
+          final date = now.add(Duration(days: i - 2));
           final isSelected = DateUtils.isSameDay(date, provider.selectedDate);
 
           return GestureDetector(
@@ -79,9 +110,7 @@ class PrayerScheduleScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected ? c.navy : c.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isSelected ? c.navy : c.hairline,
-                ),
+                border: Border.all(color: isSelected ? c.navy : c.hairline),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -91,7 +120,9 @@ class PrayerScheduleScreen extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white.withOpacity(0.8) : c.inkSoft,
+                      color: isSelected
+                          ? Colors.white.withOpacity(0.8)
+                          : c.inkSoft,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -131,7 +162,11 @@ class PrayerScheduleScreen extends StatelessWidget {
                 color: c.goldSoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.calendar_today_rounded, color: c.goldDeep, size: 22),
+              child: Icon(
+                Icons.calendar_today_rounded,
+                color: c.goldDeep,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -166,13 +201,18 @@ class PrayerScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPrayerList(BuildContext context, AppColors c, PrayerTimes pt, PrayerProvider provider) {
+  Widget _buildPrayerList(
+    BuildContext context,
+    AppColors c,
+    PrayerTimes pt,
+    PrayerProvider provider,
+  ) {
     final now = DateTime.now();
     final isSelectedToday = DateUtils.isSameDay(provider.selectedDate, now);
-    
+
     // 1. Ambil Tahajjud dini hari untuk TANGGAL YANG DIPILIH
     final tahajjudThisDate = provider.getTahajjudToday();
-    
+
     final List<_PrayerItem> items = [
       _PrayerItem('Tahajjud', tahajjudThisDate, AppPrayerTime.tahajjud),
       _PrayerItem('Subuh', pt.fajrStartTime, AppPrayerTime.fajr),
@@ -186,10 +226,10 @@ class PrayerScheduleScreen extends StatelessWidget {
     // Logika pencarian "Sekarang" dan "Berikutnya" secara GLOBAL (lintas hari)
     // 1. Cari shalat terakhir yang sudah dimulai sebelum 'now'
     // 2. Cari shalat pertama yang akan dimulai setelah 'now'
-    
+
     // Kita butuh pembanding: Shalat berikutnya yang mutlak (bisa hari ini, bisa besok)
     final tomorrowPT = PrayerTimes(
-      coordinates: provider.coordinates,
+      coordinates: provider.coordinates!,
       calculationParameters: provider.params,
       dateTime: now.add(const Duration(days: 1)),
       locationName: 'Asia/Jakarta',
@@ -203,8 +243,14 @@ class PrayerScheduleScreen extends StatelessWidget {
       tahajjudTomorrow!.toLocal(),
     ]..sort();
 
-    final absoluteNextTime = timeline.firstWhere((t) => t.isAfter(now), orElse: () => now);
-    final absoluteCurrentTime = timeline.lastWhere((t) => t.isBefore(now), orElse: () => now);
+    final absoluteNextTime = timeline.firstWhere(
+      (t) => t.isAfter(now),
+      orElse: () => now,
+    );
+    final absoluteCurrentTime = timeline.lastWhere(
+      (t) => t.isBefore(now),
+      orElse: () => now,
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -212,7 +258,7 @@ class PrayerScheduleScreen extends StatelessWidget {
         children: List.generate(items.length, (i) {
           final p = items[i];
           final pTimeLocal = p.time!.toLocal();
-          
+
           bool isActive = pTimeLocal == absoluteCurrentTime;
           bool isNext = pTimeLocal == absoluteNextTime;
           bool isPast = pTimeLocal.isBefore(absoluteCurrentTime);
@@ -222,8 +268,8 @@ class PrayerScheduleScreen extends StatelessWidget {
             statusLabel = 'Sekarang';
           } else if (isNext) {
             final diff = pTimeLocal.difference(now);
-            statusLabel = diff.inHours >= 1 
-                ? '${diff.inHours} jam lagi' 
+            statusLabel = diff.inHours >= 1
+                ? '${diff.inHours} jam lagi'
                 : '${diff.inMinutes} menit lagi';
           } else if (isPast) {
             statusLabel = 'Sudah lewat';
@@ -276,7 +322,9 @@ class PrayerScheduleScreen extends StatelessWidget {
                             color: isActive
                                 ? const Color(0xFFC7D3E0)
                                 : (isNext ? c.gold : c.inkMuted),
-                            fontWeight: isNext ? FontWeight.w600 : FontWeight.normal,
+                            fontWeight: isNext
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -333,7 +381,10 @@ class PrayerScheduleScreen extends StatelessWidget {
                         : null,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -355,7 +406,11 @@ class PrayerScheduleScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Icon(Icons.chevron_right_rounded, size: 16, color: c.inkMuted),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 16,
+                          color: c.inkMuted,
+                        ),
                       ],
                     ),
                   ),

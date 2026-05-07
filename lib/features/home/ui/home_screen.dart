@@ -2,6 +2,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/generated/assets/assets.gen.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -52,7 +53,7 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildTopBar(BuildContext context, AppColors c) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: c.surface,
         border: Border(bottom: BorderSide(color: c.hairline)),
@@ -101,7 +102,7 @@ class HomeScreen extends StatelessWidget {
                   color: c.surfaceAlt,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(Icons.notifications_outlined, color: c.ink, size: 20),
+                child: Center(child: AppAssets.icons.icNotification.svg()),
               ),
               Positioned(
                 top: 9,
@@ -151,7 +152,11 @@ class HomeScreen extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Icon(Icons.location_on_outlined, color: const Color(0xFFE6D9B4), size: 13),
+                    Icon(
+                      Icons.location_on_outlined,
+                      color: const Color(0xFFE6D9B4),
+                      size: 13,
+                    ),
                     const SizedBox(width: 4),
                     Text(
                       'Bandung, ID',
@@ -210,7 +215,13 @@ class HomeScreen extends StatelessWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Tersisa', style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFFC7D3E0))),
+                          Text(
+                            'Tersisa',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              color: const Color(0xFFC7D3E0),
+                            ),
+                          ),
                           const SizedBox(height: 2),
                           Text(
                             '02:14:08',
@@ -218,16 +229,29 @@ class HomeScreen extends StatelessWidget {
                               fontSize: 18,
                               fontWeight: FontWeight.w700,
                               color: Colors.white,
-                              fontFeatures: [const FontFeature.tabularFigures()],
+                              fontFeatures: [
+                                const FontFeature.tabularFigures(),
+                              ],
                             ),
                           ),
                         ],
                       ),
-                      Container(width: 1, height: 28, color: Colors.white.withOpacity(0.15), margin: const EdgeInsets.symmetric(horizontal: 14)),
+                      Container(
+                        width: 1,
+                        height: 28,
+                        color: Colors.white.withOpacity(0.15),
+                        margin: const EdgeInsets.symmetric(horizontal: 14),
+                      ),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Hijriah', style: GoogleFonts.plusJakartaSans(fontSize: 11, color: const Color(0xFFC7D3E0))),
+                          Text(
+                            'Hijriah',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11,
+                              color: const Color(0xFFC7D3E0),
+                            ),
+                          ),
                           const SizedBox(height: 2),
                           Text(
                             '14 Syawal 1447',
@@ -262,9 +286,7 @@ class HomeScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: p.active ? c.goldSoft : c.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: p.active ? c.goldSoft : c.hairline,
-                ),
+                border: Border.all(color: p.active ? c.goldSoft : c.hairline),
               ),
               child: Column(
                 children: [
@@ -315,7 +337,9 @@ class HomeScreen extends StatelessWidget {
             crossAxisSpacing: 10,
             mainAxisSpacing: 10,
             childAspectRatio: 0.9,
-            children: _quickActions.map((qa) => _QuickActionButton(action: qa)).toList(),
+            children: _quickActions
+                .map((qa) => _QuickActionButton(action: qa))
+                .toList(),
           ),
         ],
       ),
@@ -352,11 +376,20 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 14),
                 Row(
                   children: [
-                    const AppPill(text: 'QS. At-Talaq : 2', tone: AppPillTone.navy),
+                    const AppPill(
+                      text: 'QS. At-Talaq : 2',
+                      tone: AppPillTone.navy,
+                    ),
                     const Spacer(),
-                    _ActionBtn(icon: Icons.favorite_outline_rounded, color: c.inkSoft),
+                    _ActionBtn(
+                      icon: Icons.favorite_outline_rounded,
+                      color: c.inkSoft,
+                    ),
                     const SizedBox(width: 8),
-                    _ActionBtn(icon: Icons.bookmark_outline_rounded, color: c.inkSoft),
+                    _ActionBtn(
+                      icon: Icons.bookmark_outline_rounded,
+                      color: c.inkSoft,
+                    ),
                   ],
                 ),
               ],
@@ -369,7 +402,10 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildHadistSlider(BuildContext context, AppColors c) {
     final hadiths = [
-      ('HR. Bukhari', 'Sebaik-baik manusia adalah yang paling bermanfaat bagi orang lain.'),
+      (
+        'HR. Bukhari',
+        'Sebaik-baik manusia adalah yang paling bermanfaat bagi orang lain.',
+      ),
       ('HR. Muslim', 'Senyummu di hadapan saudaramu adalah sedekah.'),
       ('HR. Tirmidzi', 'Sebaik-baik kalian adalah yang paling baik akhlaknya.'),
     ];
@@ -558,8 +594,11 @@ class _ArchPainter extends CustomPainter {
     final outer = Path()
       ..moveTo(10, h)
       ..lineTo(10, h * 0.44)
-      ..arcToPoint(Offset(w - 10, h * 0.44),
-          radius: Radius.circular(w * 0.42), clockwise: false)
+      ..arcToPoint(
+        Offset(w - 10, h * 0.44),
+        radius: Radius.circular(w * 0.42),
+        clockwise: false,
+      )
       ..lineTo(w - 10, h);
     canvas.drawPath(outer, paint..color = color.withOpacity(0.6));
 
@@ -567,8 +606,11 @@ class _ArchPainter extends CustomPainter {
     final inner = Path()
       ..moveTo(22, h)
       ..lineTo(22, h * 0.45)
-      ..arcToPoint(Offset(w - 22, h * 0.45),
-          radius: Radius.circular(w * 0.32), clockwise: false)
+      ..arcToPoint(
+        Offset(w - 22, h * 0.45),
+        radius: Radius.circular(w * 0.32),
+        clockwise: false,
+      )
       ..lineTo(w - 22, h);
     canvas.drawPath(inner, paint..color = color.withOpacity(0.36));
   }

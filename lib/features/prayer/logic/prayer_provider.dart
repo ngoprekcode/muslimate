@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:geocoding/geocoding.dart';
 
 class PrayerProvider extends ChangeNotifier {
+// ... (omitted parts for brevity, but I will provide full replacement)
   PrayerTimes? _prayerTimes;
   PrayerTimes? get prayerTimes => _prayerTimes;
 
@@ -84,5 +85,57 @@ class PrayerProvider extends ChangeNotifier {
   String formatTime(DateTime? time) {
     if (time == null) return '--:--';
     return DateFormat('HH:mm').format(time);
+  }
+
+  /// Mendapatkan prayer yang sedang berlangsung.
+  String? getCurrentPrayer() {
+    if (_prayerTimes == null) return null;
+    final now = DateTime.now();
+
+    if (now.isAfter(_prayerTimes!.ishaStartTime!)) return PrayerType.isha;
+    if (now.isAfter(_prayerTimes!.maghribStartTime!)) return PrayerType.maghrib;
+    if (now.isAfter(_prayerTimes!.asrStartTime!)) return PrayerType.asr;
+    if (now.isAfter(_prayerTimes!.dhuhrStartTime!)) return PrayerType.dhuhr;
+    if (now.isAfter(_prayerTimes!.fajrStartTime!)) return PrayerType.fajr;
+
+    return PrayerType.isha;
+  }
+
+  /// Mendapatkan prayer berikutnya.
+  String? getNextPrayer() {
+    if (_prayerTimes == null) return null;
+    final now = DateTime.now();
+
+    if (now.isBefore(_prayerTimes!.fajrStartTime!)) return PrayerType.fajr;
+    if (now.isBefore(_prayerTimes!.dhuhrStartTime!)) return PrayerType.dhuhr;
+    if (now.isBefore(_prayerTimes!.asrStartTime!)) return PrayerType.asr;
+    if (now.isBefore(_prayerTimes!.maghribStartTime!)) return PrayerType.maghrib;
+    if (now.isBefore(_prayerTimes!.ishaStartTime!)) return PrayerType.isha;
+
+    return PrayerType.fajr;
+  }
+
+  /// Mendapatkan waktu prayer berikutnya.
+  DateTime? getNextPrayerTime() {
+    final next = getNextPrayer();
+    if (next == null || _prayerTimes == null) return null;
+
+    switch (next) {
+      case PrayerType.fajr:
+        if (DateTime.now().isAfter(_prayerTimes!.ishaStartTime!)) {
+          return _prayerTimes!.fajrStartTime!.add(const Duration(days: 1));
+        }
+        return _prayerTimes!.fajrStartTime;
+      case PrayerType.dhuhr:
+        return _prayerTimes!.dhuhrStartTime;
+      case PrayerType.asr:
+        return _prayerTimes!.asrStartTime;
+      case PrayerType.maghrib:
+        return _prayerTimes!.maghribStartTime;
+      case PrayerType.isha:
+        return _prayerTimes!.ishaStartTime;
+      default:
+        return null;
+    }
   }
 }

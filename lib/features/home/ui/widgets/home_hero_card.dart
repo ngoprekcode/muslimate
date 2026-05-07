@@ -1,7 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/core/logic/location_provider.dart';
+import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
+import 'package:provider/provider.dart';
 
 enum HomePrayerType {
   dawn,
@@ -9,6 +13,23 @@ enum HomePrayerType {
   afternoon,
   sunset,
   night;
+
+  static HomePrayerType fromPrayerType(String? type) {
+    switch (type) {
+      case 'fajr':
+        return HomePrayerType.dawn;
+      case 'dhuhr':
+        return HomePrayerType.noon;
+      case 'asr':
+        return HomePrayerType.afternoon;
+      case 'maghrib':
+        return HomePrayerType.sunset;
+      case 'isha':
+        return HomePrayerType.night;
+      default:
+        return HomePrayerType.noon;
+    }
+  }
 
   SvgGenImage get background {
     switch (this) {
@@ -90,13 +111,78 @@ enum HomePrayerType {
   }
 }
 
-class HomeHeroCard extends StatelessWidget {
+class HomeHeroCard extends StatefulWidget {
   const HomeHeroCard({super.key});
+
+  @override
+  State<HomeHeroCard> createState() => _HomeHeroCardState();
+}
+
+class _HomeHeroCardState extends State<HomeHeroCard> {
+  Timer? _timer;
+  Duration _remaining = Duration.zero;
+
+  @override
+  void initState() {
+    super.initState();
+    _startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final prayerProvider = context.read<PrayerProvider>();
+      final nextTime = prayerProvider.getNextPrayerTime();
+      if (nextTime != null) {
+        final diff = nextTime.difference(DateTime.now());
+        if (diff.isNegative) {
+          // Mungkin waktu shalat sudah tiba, trigger refresh jika perlu
+          // Namun biasanya provider akan mengupdate state
+          setState(() => _remaining = Duration.zero);
+        } else {
+          setState(() => _remaining = diff);
+        }
+      }
+    });
+  }
+
+  String _formatDuration(Duration d) {
+    final hours = d.inHours.toString().padLeft(2, '0');
+    final minutes = (d.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$hours:$minutes:$seconds';
+  }
 
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
-    final type = HomePrayerType.noon;
+    final prayerProvider = context.watch<PrayerProvider>();
+    final locProvider = context.watch<LocationProvider>();
+
+    final nextPrayerStr = prayerProvider.getNextPrayer();
+    if (nextPrayerStr == null) {
+      return Container(
+        height: 180,
+        margin: const EdgeInsets.symmetric(horizontal: 16),
+        decoration: BoxDecoration(
+          color: c.surface,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: c.hairline),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    final type = HomePrayerType.fromPrayerType(nextPrayerStr);
+    final nextTime = prayerProvider.getNextPrayerTime();
+    final address = locProvider.address ?? 'Lokasi...';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -121,13 +207,18 @@ class HomeHeroCard extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 4),
-                      Text(
-                        'Buah Batu, Bandung',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                          color: type.colorSecondary(c).withValues(alpha: 0.78),
-                          letterSpacing: 0.6,
+                      Expanded(
+                        child: Text(
+                          address,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color:
+                                type.colorSecondary(c).withValues(alpha: 0.78),
+                            letterSpacing: 0.6,
+                          ),
                         ),
                       ),
                     ],
@@ -156,7 +247,7 @@ class HomeHeroCard extends StatelessWidget {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        '11:58',
+                        prayerProvider.formatTime(nextTime),
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -191,11 +282,14 @@ class HomeHeroCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '02:14:08',
+                              _formatDuration(_remaining),
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 color: type.colorMain(c),
+                                fontFeatures: [
+                                  const FontFeature.tabularFigures()
+                                ],
                               ),
                             ),
                           ],
@@ -220,7 +314,7 @@ class HomeHeroCard extends StatelessWidget {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '14 Syawal 1447',
+                              '14 Syawal 1447', // Placeholder for now
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,

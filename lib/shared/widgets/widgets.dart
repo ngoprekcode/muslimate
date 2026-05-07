@@ -9,4 +9,5 @@ export 'app_pill.dart';
 export 'app_prayer_icon.dart';
 export 'app_screen_header.dart';
 export 'app_section_title.dart';
+export 'app_shimmer.dart';
 export 'app_toggle.dart';

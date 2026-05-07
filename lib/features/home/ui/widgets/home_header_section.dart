@@ -69,31 +69,38 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
         .watch<LocationPermissionProvider>()
         .state;
 
+    Widget content;
+
     switch (locPermissionState) {
-      /// LocationPermission Check.
       case LocationPermissionState.idle:
       case LocationPermissionState.loading:
-        return const _HomeHeaderSectionLoading();
+        content = const _HomeHeaderSectionLoading(key: ValueKey('loading'));
+        break;
       case LocationPermissionState.denied:
       case LocationPermissionState.blocked:
-        return _HomeLocationPermission();
+        content = const _HomeLocationPermission(key: ValueKey('permission'));
+        break;
       case LocationPermissionState.granted:
         switch (locState) {
-          /// LocationState (for get position and address detail)
+          case LocationState.done:
+            content = const HomeHeroCard(key: ValueKey('hero'));
+            break;
+          case LocationState.error:
+            content = const _HomeLocationPermission(key: ValueKey('error'));
+            break;
           case LocationState.idle:
           case LocationState.loading:
-            return const _HomeHeaderSectionLoading();
-          case LocationState.done:
-            return const HomeHeroCard();
-          case LocationState.error:
-            return _HomeLocationPermission();
+            content = const _HomeHeaderSectionLoading(key: ValueKey('loading'));
+            break;
         }
     }
+
+    return AppAnimatedSwitcher(child: content);
   }
 }
 
 class _HomeLocationPermission extends StatelessWidget {
-  const _HomeLocationPermission();
+  const _HomeLocationPermission({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +128,7 @@ class _HomeLocationPermission extends StatelessWidget {
 }
 
 class _HomeHeaderSectionLoading extends StatelessWidget {
-  const _HomeHeaderSectionLoading();
+  const _HomeHeaderSectionLoading({super.key});
 
   @override
   Widget build(BuildContext context) {

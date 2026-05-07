@@ -1,4 +1,5 @@
 export 'app_arabic_text.dart';
+export 'app_animated_switcher.dart';
 export 'app_bottom_nav_bar.dart';
 export 'app_brand_arch_painter.dart';
 export 'app_brand_mark.dart';

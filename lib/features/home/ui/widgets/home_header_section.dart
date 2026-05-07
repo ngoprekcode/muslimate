@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:muslimate/features/home/ui/widgets/home_hero_card.dart';
 import 'package:muslimate/features/home/ui/widgets/home_location_permission.dart';
 import 'package:muslimate/features/location/logic/location_permission_provider.dart';
 import 'package:muslimate/features/location/ui/location_permission_screen.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
+import 'package:muslimate/core/logic/location_provider.dart';
 import 'package:provider/provider.dart';
 
 class HomeHeaderSection extends StatefulWidget {
@@ -32,15 +32,13 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
   }
 
   Future<void> _fetchLocation() async {
-    try {
-      final position = await Geolocator.getCurrentPosition();
-      if (mounted) {
-        context.read<PrayerProvider>().updateLocation(
-          position.latitude,
-          position.longitude,
-        );
-      }
-    } catch (_) {}
+    final position = await context.read<LocationProvider>().fetchLocation();
+    if (position != null && mounted) {
+      context.read<PrayerProvider>().updateLocation(
+        position.latitude,
+        position.longitude,
+      );
+    }
   }
 
   @override
@@ -67,6 +65,7 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
             builder: (context) => LocationPermissionScreen(
               feature: LocationFeature.jadwal,
               onGranted: (position) {
+                context.read<LocationProvider>().updatePosition(position);
                 context.read<PrayerProvider>().updateLocation(
                   position.latitude,
                   position.longitude,

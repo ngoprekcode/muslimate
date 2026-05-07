@@ -17,6 +17,7 @@ import 'package:muslimate/shared/widgets/widgets.dart';
 
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
+import 'package:muslimate/features/location/logic/location_permission_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +27,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => PrayerProvider()),
         ChangeNotifierProvider(create: (_) => QiblaProvider()),
+        ChangeNotifierProvider(
+          create: (_) => LocationPermissionProvider()..checkPermissionStatus(),
+        ),
       ],
       child: const MuslimateApp(),
     ),

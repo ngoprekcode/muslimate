@@ -25,10 +25,7 @@ class LocationPermissionScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => LocationPermissionProvider(),
-      child: _LocationPermissionView(feature: feature, onGranted: onGranted),
-    );
+    return _LocationPermissionView(feature: feature, onGranted: onGranted);
   }
 }
 

@@ -1,13 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
-enum LocationPermissionState { idle, loading, denied, blocked }
+enum LocationPermissionState { idle, loading, denied, blocked, granted }
 
 class LocationPermissionProvider extends ChangeNotifier {
   LocationPermissionState _state = LocationPermissionState.idle;
   bool _disposed = false;
 
   LocationPermissionState get state => _state;
+
+  Future<void> checkPermissionStatus() async {
+    final status = await Geolocator.checkPermission();
+    if (status == LocationPermission.always ||
+        status == LocationPermission.whileInUse) {
+      _setState(LocationPermissionState.granted);
+    } else if (status == LocationPermission.deniedForever) {
+      _setState(LocationPermissionState.blocked);
+    } else if (status == LocationPermission.denied) {
+      _setState(LocationPermissionState.denied);
+    } else {
+      _setState(LocationPermissionState.idle);
+    }
+  }
 
   Future<Position?> requestLocation() async {
     _setState(LocationPermissionState.loading);
@@ -34,7 +48,7 @@ class LocationPermissionProvider extends ChangeNotifier {
       }
 
       final position = await Geolocator.getCurrentPosition();
-      _setState(LocationPermissionState.idle);
+      _setState(LocationPermissionState.granted);
       return position;
     } catch (_) {
       _setState(LocationPermissionState.denied);

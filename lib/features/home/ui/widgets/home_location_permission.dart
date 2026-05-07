@@ -6,7 +6,12 @@ import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 
 class HomeLocationPermission extends StatelessWidget {
-  const HomeLocationPermission({super.key});
+  final VoidCallback? onPressed;
+
+  const HomeLocationPermission({
+    super.key,
+    this.onPressed,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,9 +26,13 @@ class HomeLocationPermission extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
       ),
       child: CustomPaint(
-        painter: AppDashedBorderPainter(color: c.hairline, borderRadius: 22),
+        painter: AppDashedBorderPainter(
+          color: c.hairline,
+          borderRadius: 22,
+          strokeWidth: 1.5,
+        ),
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -38,7 +47,7 @@ class HomeLocationPermission extends StatelessWidget {
                   child: AppAssets.icons.icLocation.svg(height: 22),
                 ),
               ),
-              SizedBox(height: 14),
+              const SizedBox(height: 10),
               Text(
                 l10n.homeLocPermTitle,
                 style: GoogleFonts.plusJakartaSans(
@@ -47,7 +56,7 @@ class HomeLocationPermission extends StatelessWidget {
                   color: c.ink,
                 ),
               ),
-              SizedBox(height: 6),
+              const SizedBox(height: 6),
               Text(
                 l10n.homeLocPermDesc,
                 style: GoogleFonts.plusJakartaSans(
@@ -55,9 +64,9 @@ class HomeLocationPermission extends StatelessWidget {
                   color: c.inkSoft,
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 12),
               FilledButton(
-                onPressed: () {},
+                onPressed: onPressed,
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     vertical: 11,
@@ -74,7 +83,7 @@ class HomeLocationPermission extends StatelessWidget {
                       width: 14,
                       colorFilter: ColorFilter.mode(c.surface, BlendMode.srcIn),
                     ),
-                    SizedBox(width: 8),
+                    const SizedBox(width: 8),
                     Text(
                       l10n.homeLocPermBtn,
                       style: GoogleFonts.plusJakartaSans(

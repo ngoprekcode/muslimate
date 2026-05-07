@@ -31,5 +31,9 @@
   "locPermDeniedTitle": "Izin Ditolak",
   "locPermDeniedDesc": "Kamu menolak akses lokasi. Kamu bisa coba lagi atau pilih kotamu secara manual.",
   "locPermBlockedTitle": "Lokasi Diblokir",
-  "locPermBlockedDesc": "Akses lokasi diblokir di pengaturan perangkat. Buka Pengaturan untuk mengaktifkannya, atau pilih kotamu secara manual."
+  "locPermBlockedDesc": "Akses lokasi diblokir di pengaturan perangkat. Buka Pengaturan untuk mengaktifkannya, atau pilih kotamu secara manual.",
+
+  "homeLocPermTitle": "Aktifkan lokasi untuk waktu shalat",
+  "homeLocPermDesc": "Kami butuh lokasi kamu agar jadwal shalat akurat sesuai kota tempat kamu berada.",
+  "homeLocPermBtn": "Aktifkan lokasi"
 }

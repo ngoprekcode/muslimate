@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/features/home/ui/widgets/home_location_permission.dart';
 
 import 'widgets/home_ayat_card.dart';
 import 'widgets/home_hadist_slider.dart';
@@ -23,6 +24,8 @@ class HomeScreen extends StatelessWidget {
         child: ListView(
           children: const [
             HomeTopBar(),
+            SizedBox(height: 16),
+            HomeLocationPermission(),
             HomeHeroCard(),
             HomePrayerRail(),
             HomeQuickActions(),

@@ -51,5 +51,9 @@
   "locPermDeniedTitle": "Permission Denied",
   "locPermDeniedDesc": "You declined location access. You can try again or choose your city manually.",
   "locPermBlockedTitle": "Location Blocked",
-  "locPermBlockedDesc": "Location access is blocked in your device settings. Open Settings to enable it, or choose your city manually."
+  "locPermBlockedDesc": "Location access is blocked in your device settings. Open Settings to enable it, or choose your city manually.",
+
+  "homeLocPermTitle": "Enable location for prayer times",
+  "homeLocPermDesc": "We need your location to provide accurate prayer schedules based on your city.",
+  "homeLocPermBtn": "Enable location"
 }

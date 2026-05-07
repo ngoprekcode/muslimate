@@ -25,17 +25,66 @@ enum HomePrayerType {
     }
   }
 
-  Color color(AppColors c) {
+  String get labelPrayer {
     switch (this) {
       case HomePrayerType.dawn:
-        return c.ink;
+        return 'Shubuh';
       case HomePrayerType.noon:
-        return c.ink;
+        return 'Dzuhur';
+      case HomePrayerType.afternoon:
+        return 'Ashar';
+      case HomePrayerType.sunset:
+        return 'Maghrib';
+      case HomePrayerType.night:
+        return 'Isya';
+    }
+  }
+
+  Color colorMain(AppColors c) {
+    switch (this) {
+      case HomePrayerType.dawn:
+      case HomePrayerType.sunset:
+      case HomePrayerType.night:
+        return c.surface;
+      case HomePrayerType.noon:
       case HomePrayerType.afternoon:
         return c.ink;
+    }
+  }
+
+  Color colorSecondary(AppColors c) {
+    switch (this) {
+      case HomePrayerType.dawn:
       case HomePrayerType.sunset:
-        return c.ink;
       case HomePrayerType.night:
+        return c.surfaceMuted;
+      case HomePrayerType.noon:
+      case HomePrayerType.afternoon:
+        return c.ink;
+    }
+  }
+
+  Color colorTimePrayer(AppColors c) {
+    switch (this) {
+      case HomePrayerType.dawn:
+      case HomePrayerType.sunset:
+      case HomePrayerType.night:
+        return c.gold;
+      case HomePrayerType.noon:
+        return c.goldDeep;
+      case HomePrayerType.afternoon:
+        return c.ink;
+    }
+  }
+
+  Color colorDivider(AppColors c) {
+    switch (this) {
+      case HomePrayerType.dawn:
+      case HomePrayerType.sunset:
+      case HomePrayerType.night:
+        return c.surface;
+      case HomePrayerType.noon:
+      case HomePrayerType.afternoon:
         return c.ink;
     }
   }
@@ -67,7 +116,7 @@ class HomeHeroCard extends StatelessWidget {
                       AppAssets.icons.icLocation.svg(
                         height: 13,
                         colorFilter: ColorFilter.mode(
-                          c.ink.withValues(alpha: 0.78),
+                          type.colorSecondary(c).withValues(alpha: 0.78),
                           BlendMode.srcIn,
                         ),
                       ),
@@ -77,7 +126,7 @@ class HomeHeroCard extends StatelessWidget {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: c.ink.withValues(alpha: 0.78),
+                          color: type.colorSecondary(c).withValues(alpha: 0.78),
                           letterSpacing: 0.6,
                         ),
                       ),
@@ -88,7 +137,7 @@ class HomeHeroCard extends StatelessWidget {
                     'Shalat berikutnya',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 13,
-                      color: c.ink.withValues(alpha: 0.55),
+                      color: type.colorSecondary(c).withValues(alpha: 0.55),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -97,11 +146,11 @@ class HomeHeroCard extends StatelessWidget {
                     textBaseline: TextBaseline.alphabetic,
                     children: [
                       Text(
-                        'Dzuhur',
+                        type.labelPrayer,
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 30,
                           fontWeight: FontWeight.w700,
-                          color: c.ink,
+                          color: type.colorMain(c),
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -111,7 +160,7 @@ class HomeHeroCard extends StatelessWidget {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: c.goldDeep,
+                          color: type.colorTimePrayer(c),
                         ),
                       ),
                     ],
@@ -121,7 +170,9 @@ class HomeHeroCard extends StatelessWidget {
                     padding: const EdgeInsets.only(top: 14),
                     decoration: BoxDecoration(
                       border: Border(
-                        top: BorderSide(color: c.ink.withValues(alpha: 0.14)),
+                        top: BorderSide(
+                          color: type.colorDivider(c).withValues(alpha: 0.14),
+                        ),
                       ),
                     ),
                     child: Row(
@@ -133,7 +184,9 @@ class HomeHeroCard extends StatelessWidget {
                               'Tersisa',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
-                                color: c.ink.withValues(alpha: 0.55),
+                                color: type
+                                    .colorSecondary(c)
+                                    .withValues(alpha: 0.55),
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -142,7 +195,7 @@ class HomeHeroCard extends StatelessWidget {
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
-                                color: c.ink,
+                                color: type.colorMain(c),
                               ),
                             ),
                           ],
@@ -150,7 +203,7 @@ class HomeHeroCard extends StatelessWidget {
                         Container(
                           width: 1,
                           height: 28,
-                          color: c.ink.withValues(alpha: 0.14),
+                          color: type.colorDivider(c).withValues(alpha: 0.14),
                           margin: const EdgeInsets.symmetric(horizontal: 14),
                         ),
                         Column(
@@ -160,7 +213,9 @@ class HomeHeroCard extends StatelessWidget {
                               'Hijriah',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
-                                color: c.ink.withValues(alpha: 0.55),
+                                color: type
+                                    .colorSecondary(c)
+                                    .withValues(alpha: 0.55),
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -169,7 +224,7 @@ class HomeHeroCard extends StatelessWidget {
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: c.ink,
+                                color: type.colorMain(c),
                               ),
                             ),
                           ],

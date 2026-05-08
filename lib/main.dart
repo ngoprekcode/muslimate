@@ -17,13 +17,21 @@ import 'package:muslimate/shared/widgets/widgets.dart';
 
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
+import 'package:muslimate/features/location/logic/location_permission_provider.dart';
+import 'package:muslimate/core/logic/location_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-    runApp(
+  runApp(
     MultiProvider(
       providers: [
+        /// Global Provider
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => LocationProvider()),
+        ChangeNotifierProvider(
+          create: (_) => LocationPermissionProvider()..checkPermissionStatus(),
+        ),
+
         ChangeNotifierProvider(create: (_) => PrayerProvider()),
         ChangeNotifierProvider(create: (_) => QiblaProvider()),
       ],
@@ -51,10 +59,7 @@ class MuslimateApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      supportedLocales: const [
-        Locale('en'),
-        Locale('id'),
-      ],
+      supportedLocales: const [Locale('en'), Locale('id')],
       home: settings.onboardingDone
           ? const MainShell()
           : OnboardingScreen(onFinish: settings.completeOnboarding),

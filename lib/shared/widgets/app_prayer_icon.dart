@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:muslimate/core/app_colors.dart';
 
-enum AppPrayerTime { fajr, dhuhr, asr, maghrib, isha }
+enum AppPrayerTime { tahajjud, fajr, dhuhr, asr, maghrib, isha }
 
 class AppPrayerIcon extends StatelessWidget {
   final AppPrayerTime prayer;
@@ -15,6 +15,9 @@ class AppPrayerIcon extends StatelessWidget {
     final c = color ?? AppColors.of(context).gold;
     IconData icon;
     switch (prayer) {
+      case AppPrayerTime.tahajjud:
+        icon = Icons.bedtime_rounded;
+        break;
       case AppPrayerTime.fajr:
         icon = Icons.wb_twilight_rounded;
         break;

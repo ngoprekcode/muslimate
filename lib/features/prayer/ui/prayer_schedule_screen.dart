@@ -1,8 +1,10 @@
-import 'package:adhan/adhan.dart';
+import 'package:prayers_times/prayers_times.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:muslimate/features/location/ui/location_permission_screen.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
@@ -14,13 +16,24 @@ class PrayerScheduleScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final prayerProvider = context.watch<PrayerProvider>();
+
+    if (prayerProvider.coordinates == null) {
+      return LocationPermissionScreen(
+        feature: LocationFeature.jadwal,
+        onGranted: (pos) {
+          prayerProvider.updateLocation(
+            pos.latitude,
+            pos.longitude,
+          );
+        },
+      );
+    }
+
     final pt = prayerProvider.prayerTimes;
 
     if (pt == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-
-    final formattedDate = DateFormat('EEEE, d MMMM yyyy').format(prayerProvider.selectedDate);
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -29,15 +42,30 @@ class PrayerScheduleScreen extends StatelessWidget {
           children: [
             AppScreenHeader(
               title: 'Jadwal Shalat',
-              subtitle: 'Bandung • $formattedDate',
-              trailing: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: c.surfaceAlt,
-                  borderRadius: BorderRadius.circular(10),
+              subtitle: prayerProvider.locationName,
+              trailing: GestureDetector(
+                onTap: () async {
+                  try {
+                    final pos = await Geolocator.getCurrentPosition();
+                    prayerProvider.updateLocation(
+                      pos.latitude,
+                      pos.longitude,
+                    );
+                  } catch (_) {}
+                },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: c.surfaceAlt,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    Icons.location_on_outlined,
+                    color: c.ink,
+                    size: 18,
+                  ),
                 ),
-                child: Icon(Icons.location_on_outlined, color: c.ink, size: 18),
               ),
             ),
             Expanded(
@@ -57,7 +85,11 @@ class PrayerScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDayStrip(BuildContext context, AppColors c, PrayerProvider provider) {
+  Widget _buildDayStrip(
+    BuildContext context,
+    AppColors c,
+    PrayerProvider provider,
+  ) {
     final now = DateTime.now();
     return SizedBox(
       height: 74,
@@ -67,10 +99,8 @@ class PrayerScheduleScreen extends StatelessWidget {
         itemCount: 7,
         separatorBuilder: (_, __) => const SizedBox(width: 6),
         itemBuilder: (context, i) {
-          final date = now.add(Duration(days: i - 2)); // Show a range around today
-          final isSelected = date.day == provider.selectedDate.day &&
-                             date.month == provider.selectedDate.month &&
-                             date.year == provider.selectedDate.year;
+          final date = now.add(Duration(days: i - 2));
+          final isSelected = DateUtils.isSameDay(date, provider.selectedDate);
 
           return GestureDetector(
             onTap: () => provider.updateDate(date),
@@ -80,9 +110,7 @@ class PrayerScheduleScreen extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isSelected ? c.navy : c.surface,
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isSelected ? c.navy : c.hairline,
-                ),
+                border: Border.all(color: isSelected ? c.navy : c.hairline),
               ),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -92,7 +120,9 @@ class PrayerScheduleScreen extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 10,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white.withOpacity(0.8) : c.inkSoft,
+                      color: isSelected
+                          ? Colors.white.withOpacity(0.8)
+                          : c.inkSoft,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -114,9 +144,6 @@ class PrayerScheduleScreen extends StatelessWidget {
   }
 
   Widget _buildHijriCard(BuildContext context, AppColors c) {
-    // Note: Adhan library doesn't provide Hijri date directly,
-    // usually handled by another package like hibri_calendar.
-    // For now, keeping it static or simplified.
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Container(
@@ -135,7 +162,11 @@ class PrayerScheduleScreen extends StatelessWidget {
                 color: c.goldSoft,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.calendar_today_rounded, color: c.goldDeep, size: 22),
+              child: Icon(
+                Icons.calendar_today_rounded,
+                color: c.goldDeep,
+                size: 22,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -153,7 +184,7 @@ class PrayerScheduleScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Jadwal Otomatis (Adhan)',
+                    'Jadwal Otomatis (Prayers Times)',
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -170,27 +201,82 @@ class PrayerScheduleScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPrayerList(BuildContext context, AppColors c, PrayerTimes pt, PrayerProvider provider) {
+  Widget _buildPrayerList(
+    BuildContext context,
+    AppColors c,
+    PrayerTimes pt,
+    PrayerProvider provider,
+  ) {
+    final now = DateTime.now();
+    final isSelectedToday = DateUtils.isSameDay(provider.selectedDate, now);
+
+    // 1. Ambil Tahajjud dini hari untuk TANGGAL YANG DIPILIH
+    final tahajjudThisDate = provider.getTahajjudToday();
+
     final List<_PrayerItem> items = [
-      _PrayerItem('Subuh', pt.fajr, AppPrayerTime.fajr, Prayer.fajr),
-      _PrayerItem('Terbit', pt.sunrise, AppPrayerTime.dhuhr, Prayer.sunrise),
-      _PrayerItem('Dzuhur', pt.dhuhr, AppPrayerTime.dhuhr, Prayer.dhuhr),
-      _PrayerItem('Ashar', pt.asr, AppPrayerTime.asr, Prayer.asr),
-      _PrayerItem('Maghrib', pt.maghrib, AppPrayerTime.maghrib, Prayer.maghrib),
-      _PrayerItem('Isya', pt.isha, AppPrayerTime.isha, Prayer.isha),
+      _PrayerItem('Tahajjud', tahajjudThisDate, AppPrayerTime.tahajjud),
+      _PrayerItem('Subuh', pt.fajrStartTime, AppPrayerTime.fajr),
+      _PrayerItem('Terbit', pt.sunrise, AppPrayerTime.dhuhr),
+      _PrayerItem('Dzuhur', pt.dhuhrStartTime, AppPrayerTime.dhuhr),
+      _PrayerItem('Ashar', pt.asrStartTime, AppPrayerTime.asr),
+      _PrayerItem('Maghrib', pt.maghribStartTime, AppPrayerTime.maghrib),
+      _PrayerItem('Isya', pt.ishaStartTime, AppPrayerTime.isha),
     ];
 
-    final currentPrayer = pt.currentPrayer();
+    // Logika pencarian "Sekarang" dan "Berikutnya" secara GLOBAL (lintas hari)
+    // 1. Cari shalat terakhir yang sudah dimulai sebelum 'now'
+    // 2. Cari shalat pertama yang akan dimulai setelah 'now'
+
+    // Kita butuh pembanding: Shalat berikutnya yang mutlak (bisa hari ini, bisa besok)
+    final tomorrowPT = PrayerTimes(
+      coordinates: provider.coordinates!,
+      calculationParameters: provider.params,
+      dateTime: now.add(const Duration(days: 1)),
+      locationName: 'Asia/Jakarta',
+    );
+    final tahajjudTomorrow = SunnahInsights(tomorrowPT).lastThirdOfTheNight;
+
+    // Gabungkan list untuk mencari shalat Aktif & Berikutnya secara global
+    // (Bisa diperluas ke kemarin & besok jika perlu, tapi hari ini + besok cukup untuk case Isya)
+    final List<DateTime> timeline = [
+      ...items.map((e) => e.time!.toLocal()),
+      tahajjudTomorrow!.toLocal(),
+    ]..sort();
+
+    final absoluteNextTime = timeline.firstWhere(
+      (t) => t.isAfter(now),
+      orElse: () => now,
+    );
+    final absoluteCurrentTime = timeline.lastWhere(
+      (t) => t.isBefore(now),
+      orElse: () => now,
+    );
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Column(
-        children: items.map((p) {
-          final isActive = p.adhanPrayer == currentPrayer;
-          final isPast = p.time.isBefore(DateTime.now());
+        children: List.generate(items.length, (i) {
+          final p = items[i];
+          final pTimeLocal = p.time!.toLocal();
+
+          bool isActive = pTimeLocal == absoluteCurrentTime;
+          bool isNext = pTimeLocal == absoluteNextTime;
+          bool isPast = pTimeLocal.isBefore(absoluteCurrentTime);
+
+          String statusLabel = 'Mendatang';
+          if (isActive) {
+            statusLabel = 'Sekarang';
+          } else if (isNext) {
+            final diff = pTimeLocal.difference(now);
+            statusLabel = diff.inHours >= 1
+                ? '${diff.inHours} jam lagi'
+                : '${diff.inMinutes} menit lagi';
+          } else if (isPast) {
+            statusLabel = 'Sudah lewat';
+          }
 
           return Opacity(
-            opacity: (!isActive && isPast) ? 0.55 : 1.0,
+            opacity: (isPast && !isActive) ? 0.55 : 1.0,
             child: Container(
               margin: const EdgeInsets.only(bottom: 4),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
@@ -204,9 +290,7 @@ class PrayerScheduleScreen extends StatelessWidget {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: isActive
-                          ? c.gold.withOpacity(0.18)
-                          : c.surfaceAlt,
+                      color: isActive ? c.gold.withOpacity(0.18) : c.surfaceAlt,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(
@@ -232,12 +316,15 @@ class PrayerScheduleScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          isActive ? 'Sekarang' : (isPast ? 'Sudah lewat' : 'Mendatang'),
+                          statusLabel,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
                             color: isActive
                                 ? const Color(0xFFC7D3E0)
-                                : c.inkMuted,
+                                : (isNext ? c.gold : c.inkMuted),
+                            fontWeight: isNext
+                                ? FontWeight.w600
+                                : FontWeight.normal,
                           ),
                         ),
                       ],
@@ -262,7 +349,7 @@ class PrayerScheduleScreen extends StatelessWidget {
               ),
             ),
           );
-        }).toList(),
+        }),
       ),
     );
   }
@@ -294,7 +381,10 @@ class PrayerScheduleScreen extends StatelessWidget {
                         : null,
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
                     child: Row(
                       children: [
                         Expanded(
@@ -316,7 +406,11 @@ class PrayerScheduleScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 4),
-                        Icon(Icons.chevron_right_rounded, size: 16, color: c.inkMuted),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 16,
+                          color: c.inkMuted,
+                        ),
                       ],
                     ),
                   ),
@@ -332,8 +426,7 @@ class PrayerScheduleScreen extends StatelessWidget {
 
 class _PrayerItem {
   final String name;
-  final DateTime time;
+  final DateTime? time;
   final AppPrayerTime icon;
-  final Prayer adhanPrayer;
-  _PrayerItem(this.name, this.time, this.icon, this.adhanPrayer);
+  _PrayerItem(this.name, this.time, this.icon);
 }

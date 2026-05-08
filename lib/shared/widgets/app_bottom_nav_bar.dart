@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/generated/assets/assets.gen.dart';
 
 class AppBottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -16,31 +17,11 @@ class AppBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final items = [
-      _NavItem(
-        icon: Icons.home_outlined,
-        activeIcon: Icons.home_rounded,
-        label: 'Beranda',
-      ),
-      _NavItem(
-        icon: Icons.access_time_outlined,
-        activeIcon: Icons.access_time_filled_rounded,
-        label: 'Shalat',
-      ),
-      _NavItem(
-        icon: Icons.menu_book_outlined,
-        activeIcon: Icons.menu_book_rounded,
-        label: "Al-Qur'an",
-      ),
-      _NavItem(
-        icon: Icons.spa_outlined,
-        activeIcon: Icons.spa_rounded,
-        label: 'Wirid',
-      ),
-      _NavItem(
-        icon: Icons.settings_outlined,
-        activeIcon: Icons.settings_rounded,
-        label: 'Lainnya',
-      ),
+      _NavItem(icon: AppAssets.icons.icHome, label: 'Beranda'),
+      _NavItem(icon: AppAssets.icons.icPrayer, label: 'Shalat'),
+      _NavItem(icon: AppAssets.icons.icQuran, label: "Al-Qur'an"),
+      _NavItem(icon: AppAssets.icons.icWirid, label: 'Wirid'),
+      _NavItem(icon: AppAssets.icons.icSettings, label: 'Lainnya'),
     ];
 
     return Container(
@@ -62,11 +43,12 @@ class AppBottomNavBar extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const SizedBox(height: 6),
-                      Icon(
-                        active ? items[i].activeIcon : items[i].icon,
-                        color: active ? c.gold : c.inkMuted,
-                        size: 22,
+                      items[i].icon.svg(
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          active ? c.gold : c.inkMuted,
+                          BlendMode.srcIn,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -80,7 +62,6 @@ class AppBottomNavBar extends StatelessWidget {
                           letterSpacing: 0.2,
                         ),
                       ),
-                      const SizedBox(height: 6),
                     ],
                   ),
                 ),
@@ -94,12 +75,7 @@ class AppBottomNavBar extends StatelessWidget {
 }
 
 class _NavItem {
-  final IconData icon;
-  final IconData activeIcon;
+  final SvgGenImage icon;
   final String label;
-  const _NavItem({
-    required this.icon,
-    required this.activeIcon,
-    required this.label,
-  });
+  const _NavItem({required this.icon, required this.label});
 }

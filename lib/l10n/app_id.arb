@@ -15,5 +15,25 @@
   "north": "U",
   "east": "T",
   "south": "S",
-  "west": "B"
+  "west": "B",
+
+  "locPermScreenTitle": "Izin Lokasi",
+  "locPermAllowBtn": "Izinkan Akses Lokasi",
+  "locPermRetryBtn": "Izinkan Lagi",
+  "locPermSettingsBtn": "Buka Pengaturan",
+  "locPermManualBtn": "Pilih Manual",
+  "locPermKiblatTitle": "Arah Kiblat",
+  "locPermKiblatDesc": "Izinkan akses lokasi agar kami dapat menghitung arah kiblat yang akurat dari posisimu.",
+  "locPermJadwalTitle": "Jadwal Shalat",
+  "locPermJadwalDesc": "Izinkan akses lokasi agar kami dapat menghitung waktu shalat yang tepat di kotamu.",
+  "locPermMasjidTitle": "Masjid Terdekat",
+  "locPermMasjidDesc": "Izinkan akses lokasi agar kami dapat menemukan masjid di sekitarmu.",
+  "locPermDeniedTitle": "Izin Ditolak",
+  "locPermDeniedDesc": "Kamu menolak akses lokasi. Kamu bisa coba lagi atau pilih kotamu secara manual.",
+  "locPermBlockedTitle": "Lokasi Diblokir",
+  "locPermBlockedDesc": "Akses lokasi diblokir di pengaturan perangkat. Buka Pengaturan untuk mengaktifkannya, atau pilih kotamu secara manual.",
+
+  "homeLocPermTitle": "Aktifkan lokasi untuk waktu shalat",
+  "homeLocPermDesc": "Kami butuh lokasi kamu agar jadwal shalat akurat sesuai kota tempat kamu berada.",
+  "homeLocPermBtn": "Aktifkan lokasi"
 }

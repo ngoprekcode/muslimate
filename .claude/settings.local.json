@@ -8,7 +8,8 @@
       "Read(//tmp/**)",
       "Bash(tar xf *)",
       "Bash(flutter pub *)",
-      "Bash(flutter analyze *)"
+      "Bash(flutter analyze *)",
+      "Bash(xargs wc *)"
     ]
   }
 }

@@ -19,7 +19,7 @@ class PrayerScheduleScreen extends StatelessWidget {
 
     if (prayerProvider.coordinates == null) {
       return LocationPermissionScreen(
-        feature: LocationFeature.jadwal,
+        hideAppBar: true,
         onGranted: (pos) {
           prayerProvider.updateLocation(
             pos.latitude,

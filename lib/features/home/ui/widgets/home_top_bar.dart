@@ -60,7 +60,11 @@ class HomeTopBar extends StatelessWidget {
                   color: c.surfaceAlt,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Center(child: AppAssets.icons.icNotification.svg()),
+                child: Center(
+                  child: AppAssets.icons.icNotification.svg(
+                    colorFilter: ColorFilter.mode(c.ink, BlendMode.srcIn),
+                  ),
+                ),
               ),
               Positioned(
                 top: 9,

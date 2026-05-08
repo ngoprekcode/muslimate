@@ -1,44 +1,89 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:muslimate/generated/assets/assets.gen.dart';
 import 'package:provider/provider.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/features/location/logic/location_permission_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 
-enum LocationFeature { kiblat, jadwal, masjid }
-
 /// Reusable location-permission gate screen.
 ///
 /// Shows one of three states — idle, denied, blocked — driven by
 /// [LocationPermissionProvider].
 class LocationPermissionScreen extends StatelessWidget {
-  final LocationFeature feature;
+  final bool hideAppBar;
   final ValueChanged<Position> onGranted;
 
   const LocationPermissionScreen({
     super.key,
-    required this.feature,
     required this.onGranted,
+    this.hideAppBar = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return _LocationPermissionView(feature: feature, onGranted: onGranted);
+    return _LocationPermissionView(
+      onGranted: onGranted,
+      hideAppBar: hideAppBar,
+    );
   }
 }
 
 // ---------------------------------------------------------------------------
 
-class _LocationPermissionView extends StatelessWidget {
-  final LocationFeature feature;
+class _LocationPermissionView extends StatefulWidget {
+  final bool hideAppBar;
   final ValueChanged<Position> onGranted;
 
   const _LocationPermissionView({
-    required this.feature,
     required this.onGranted,
+    required this.hideAppBar,
   });
+
+  @override
+  State<_LocationPermissionView> createState() =>
+      _LocationPermissionViewState();
+}
+
+class _LocationPermissionViewState extends State<_LocationPermissionView>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final provider = context.read<LocationPermissionProvider>();
+      // Jika statusnya blocked atau denied, cek ulang saat kembali ke aplikasi
+      if (provider.state == LocationPermissionState.blocked ||
+          provider.state == LocationPermissionState.denied) {
+        _handleResumeStatus(provider);
+      }
+    }
+  }
+
+  Future<void> _handleResumeStatus(LocationPermissionProvider provider) async {
+    await provider.checkPermissionStatus();
+    if (provider.state != LocationPermissionState.blocked &&
+        provider.state != LocationPermissionState.denied) {
+      // Jika sudah tidak diblokir/denied, coba request lokasi (untuk popup atau ambil pos)
+      final pos = await provider.requestLocation();
+      if (pos != null && mounted) {
+        widget.onGranted(pos);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,27 +93,67 @@ class _LocationPermissionView extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: c.bg,
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: _ActionButtons(onGranted: widget.onGranted, state: state),
+        ),
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            AppScreenHeader(title: l10n.locPermScreenTitle),
+            if (!widget.hideAppBar)
+              AppScreenHeader(
+                title: l10n.locPermScreenTitle,
+                subtitle: 'Arahkan ponsel Anda',
+              ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(28, 0, 28, 32),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _Illustration(feature: feature, state: state),
-                    const SizedBox(height: 28),
-                    _FeatureCopy(feature: feature, state: state),
-                    const SizedBox(height: 40),
-                    _ActionButtons(
-                      feature: feature,
-                      state: state,
-                      onGranted: onGranted,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _Illustration(state: state),
+                              const SizedBox(height: 16),
+                              _FeatureChip(state: state),
+                              const SizedBox(height: 12),
+                              _FeatureCopy(state: state),
+                              const SizedBox(height: 12),
+                              AppInfoListCard(
+                                children: [
+                                  AppInfoItem(
+                                    isPrimary: true,
+                                    text: l10n.locPermDataMatching,
+                                  ),
+                                  Divider(color: c.hairline),
+                                  AppInfoItem(
+                                    isPrimary: true,
+                                    text: l10n.locPermOnlyActive,
+                                  ),
+                                  Divider(color: c.hairline),
+                                  AppInfoItem(
+                                    isPrimary: true,
+                                    text: l10n.locPermNeverShared,
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ),
           ],
@@ -81,73 +166,137 @@ class _LocationPermissionView extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _Illustration extends StatelessWidget {
-  final LocationFeature feature;
   final LocationPermissionState state;
-
-  const _Illustration({required this.feature, required this.state});
-
-  IconData get _featureIcon => switch (feature) {
-    LocationFeature.kiblat => Icons.explore_rounded,
-    LocationFeature.jadwal => Icons.access_time_rounded,
-    LocationFeature.masjid => Icons.mosque_rounded,
-  };
+  const _Illustration({required this.state});
 
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final (innerColor, icon, iconColor) = switch (state) {
       LocationPermissionState.denied => (
-        c.goldDeep,
+        isDark ? c.surfaceAlt : c.ink,
         Icons.location_off_rounded,
-        c.surface,
+        c.gold,
       ),
       LocationPermissionState.blocked => (
         c.surfaceMuted,
         Icons.lock_outline_rounded,
         c.inkMuted,
       ),
-      _ => (c.navy, _featureIcon, c.gold),
+      _ => (isDark ? c.surfaceAlt : c.ink, Icons.location_on_outlined, c.gold),
     };
 
     return Container(
-      width: 120,
-      height: 120,
+      width: 140,
+      height: 140,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: c.surfaceAlt,
-        border: Border.all(color: c.hairline, width: 1.5),
+        border: Border.all(color: c.hairline.withValues(alpha: 0.35), width: 1),
       ),
       child: Center(
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
-          curve: Curves.easeInOut,
-          width: 80,
-          height: 80,
+        child: Container(
+          width: 120,
+          height: 120,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: innerColor,
-            boxShadow: [
-              BoxShadow(
-                color: innerColor.withValues(alpha: 0.20),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(
+              color: c.hairline.withValues(alpha: 0.5),
+              width: 1,
+            ),
           ),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: state == LocationPermissionState.loading
-                ? SizedBox(
-                    key: const ValueKey('loading'),
-                    width: 28,
-                    height: 28,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2.5,
-                      color: c.gold,
-                    ),
-                  )
-                : Icon(icon, key: ValueKey(icon), color: iconColor, size: 32),
+          child: Center(
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: c.surfaceAlt,
+                border: Border.all(
+                  color: c.hairline.withValues(alpha: 0.65),
+                  width: 1,
+                ),
+              ),
+              child: Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: innerColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: iconColor.withValues(alpha: 0.55),
+                        blurRadius: 24,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: state == LocationPermissionState.loading
+                        ? SizedBox(
+                            width: 28,
+                            height: 28,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: c.gold,
+                            ),
+                          )
+                        : Icon(
+                            icon,
+                            key: ValueKey(icon),
+                            color: iconColor,
+                            size: 32,
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FeatureChip extends StatelessWidget {
+  final LocationPermissionState state;
+  const _FeatureChip({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = AppColors.of(context);
+
+    final l10n = AppLocalizations.of(context)!;
+
+    final label = switch (state) {
+      LocationPermissionState.denied => l10n.locPermPreviouslyDenied,
+      LocationPermissionState.blocked => l10n.locPermBlockedInSystem,
+      _ => l10n.locPermRequired,
+    };
+
+    final (backgroundColor, textColor) = switch (state) {
+      LocationPermissionState.denied => (c.surfaceMuted, c.inkSoft),
+      LocationPermissionState.blocked => (c.surfaceMuted, c.inkSoft),
+      _ => (c.goldSoft, c.goldDeep),
+    };
+
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(100),
+          color: backgroundColor,
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 11,
+            color: textColor,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
@@ -158,10 +307,9 @@ class _Illustration extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _FeatureCopy extends StatelessWidget {
-  final LocationFeature feature;
   final LocationPermissionState state;
 
-  const _FeatureCopy({required this.feature, required this.state});
+  const _FeatureCopy({required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -169,29 +317,20 @@ class _FeatureCopy extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
 
     final title = switch (state) {
-      LocationPermissionState.denied => l10n.locPermDeniedTitle,
-      LocationPermissionState.blocked => l10n.locPermBlockedTitle,
-      _ => switch (feature) {
-        LocationFeature.kiblat => l10n.locPermKiblatTitle,
-        LocationFeature.jadwal => l10n.locPermJadwalTitle,
-        LocationFeature.masjid => l10n.locPermMasjidTitle,
-      },
+      LocationPermissionState.denied => l10n.locPermStillNeeded,
+      LocationPermissionState.blocked => l10n.locPermAccessBlocked,
+      _ => l10n.locPermEnableAccess,
     };
 
     final desc = switch (state) {
       LocationPermissionState.denied => l10n.locPermDeniedDesc,
       LocationPermissionState.blocked => l10n.locPermBlockedDesc,
-      _ => switch (feature) {
-        LocationFeature.kiblat => l10n.locPermKiblatDesc,
-        LocationFeature.jadwal => l10n.locPermJadwalDesc,
-        LocationFeature.masjid => l10n.locPermMasjidDesc,
-      },
+      _ => l10n.locPermEnabledDesc,
     };
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 200),
       child: Column(
-        key: ValueKey('$state-$feature'),
         children: [
           Text(
             title,
@@ -204,12 +343,12 @@ class _FeatureCopy extends StatelessWidget {
               height: 1.2,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 6),
           Text(
             desc,
             textAlign: TextAlign.center,
             style: GoogleFonts.plusJakartaSans(
-              fontSize: 14,
+              fontSize: 13,
               color: c.inkSoft,
               height: 1.55,
             ),
@@ -223,21 +362,21 @@ class _FeatureCopy extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _ActionButtons extends StatelessWidget {
-  final LocationFeature feature;
   final LocationPermissionState state;
   final ValueChanged<Position> onGranted;
 
-  const _ActionButtons({
-    required this.feature,
-    required this.state,
-    required this.onGranted,
-  });
+  const _ActionButtons({required this.state, required this.onGranted});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final provider = context.read<LocationPermissionProvider>();
     final isLoading = state == LocationPermissionState.loading;
+
+    final icon = switch (state) {
+      LocationPermissionState.blocked => AppAssets.icons.icSettings,
+      _ => AppAssets.icons.icLocation,
+    };
 
     final primaryLabel = switch (state) {
       LocationPermissionState.denied => l10n.locPermRetryBtn,
@@ -248,33 +387,29 @@ class _ActionButtons extends StatelessWidget {
     Future<void> handlePrimary() async {
       if (state == LocationPermissionState.blocked) {
         await provider.openSettings();
-        // After returning from settings, reset so user can retry
-        provider.reset();
         return;
       }
       final position = await provider.requestLocation();
       if (position != null) onGranted(position);
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _PrimaryButton(
-          label: primaryLabel,
-          isLoading: isLoading,
-          onPressed: isLoading ? null : handlePrimary,
-        ),
-      ],
+    return _PrimaryButton(
+      icon: icon,
+      label: primaryLabel,
+      isLoading: isLoading,
+      onPressed: isLoading ? null : handlePrimary,
     );
   }
 }
 
 class _PrimaryButton extends StatelessWidget {
+  final SvgGenImage icon;
   final String label;
   final bool isLoading;
   final VoidCallback? onPressed;
 
   const _PrimaryButton({
+    required this.icon,
     required this.label,
     required this.isLoading,
     required this.onPressed,
@@ -284,43 +419,39 @@ class _PrimaryButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
 
-    return SizedBox(
-      height: 52,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: c.navy,
-          foregroundColor: c.gold,
-          disabledBackgroundColor: c.surfaceMuted,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-          ),
-          elevation: 0,
-          padding: EdgeInsets.zero,
-        ),
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 150),
-          child: isLoading
-              ? SizedBox(
-                  key: const ValueKey('spinner'),
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: c.gold,
+    return FilledButton(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 150),
+        child: isLoading
+            ? SizedBox(
+                key: const ValueKey('spinner'),
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: c.gold),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  icon.svg(
+                    width: 14,
+                    colorFilter: ColorFilter.mode(c.gold, BlendMode.srcIn),
                   ),
-                )
-              : Text(
-                  label,
-                  key: ValueKey(label),
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: c.gold,
-                    letterSpacing: 0.1,
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
                   ),
-                ),
-        ),
+                ],
+              ),
       ),
     );
   }

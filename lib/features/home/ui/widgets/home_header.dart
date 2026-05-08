@@ -74,10 +74,10 @@ class _HomeHeaderState extends State<HomeHeader>
     Widget content;
 
     switch (locPermissionState) {
-      case LocationPermissionState.idle:
       case LocationPermissionState.loading:
         content = const HomeHeaderLoading(key: ValueKey('loading'));
         break;
+      case LocationPermissionState.idle:
       case LocationPermissionState.denied:
       case LocationPermissionState.blocked:
         content = const _HomeLocationPermission(key: ValueKey('permission'));
@@ -112,7 +112,6 @@ class _HomeLocationPermission extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => LocationPermissionScreen(
-              feature: LocationFeature.jadwal,
               onGranted: (position) {
                 context.read<LocationProvider>().updatePosition(position);
                 context.read<PrayerProvider>().updateLocation(

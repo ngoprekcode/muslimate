@@ -25,6 +25,7 @@ class HomeScreen extends StatelessWidget {
             HomeTopBar(),
             SizedBox(height: 16),
             HomeHeader(),
+            SizedBox(height: 14),
             HomePrayerRail(),
             HomeQuickActions(),
             HomeAyatCard(),

@@ -1,25 +1,24 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
-import 'package:muslimate/shared/widgets/widgets.dart';
+import 'package:muslimate/generated/assets/assets.gen.dart';
 
 class HomePrayerRail extends StatelessWidget {
   const HomePrayerRail({super.key});
 
-  static const _prayers = [
-    _Prayer('Subuh', '04:32', AppPrayerTime.fajr, false),
-    _Prayer('Dzuhur', '11:58', AppPrayerTime.dhuhr, true),
-    _Prayer('Ashar', '15:21', AppPrayerTime.asr, false),
-    _Prayer('Maghrib', '17:54', AppPrayerTime.maghrib, false),
-    _Prayer('Isya', '19:06', AppPrayerTime.isha, false),
+  static final _prayers = [
+    _Prayer('Subuh', '04:32', AppAssets.icons.icDawn, false),
+    _Prayer('Dzuhur', '11:58', AppAssets.icons.icNoon, true),
+    _Prayer('Ashar', '15:21', AppAssets.icons.icAfternoon, false),
+    _Prayer('Maghrib', '17:54', AppAssets.icons.icSunset, false),
+    _Prayer('Isya', '19:06', AppAssets.icons.icNight, false),
   ];
 
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: _prayers.map((p) {
           return Expanded(
@@ -33,10 +32,12 @@ class HomePrayerRail extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  AppPrayerIcon(
-                    prayer: p.prayerTime,
-                    size: 20,
-                    color: p.active ? c.goldDeep : c.inkSoft,
+                  p.prayerTime.svg(
+                    height: 20,
+                    colorFilter: ColorFilter.mode(
+                      p.active ? c.goldDeep : c.inkSoft,
+                      BlendMode.srcIn,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
@@ -70,7 +71,7 @@ class HomePrayerRail extends StatelessWidget {
 class _Prayer {
   final String name;
   final String time;
-  final AppPrayerTime prayerTime;
+  final SvgGenImage prayerTime;
   final bool active;
   const _Prayer(this.name, this.time, this.prayerTime, this.active);
 }

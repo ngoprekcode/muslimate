@@ -1,53 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/features/calendar/logic/calendar_provider.dart';
+import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
+import 'package:provider/provider.dart';
 
-class CalendarScreen extends StatefulWidget {
+class CalendarScreen extends StatelessWidget {
   const CalendarScreen({super.key});
-
-  @override
-  State<CalendarScreen> createState() => _CalendarScreenState();
-}
-
-class _CalendarScreenState extends State<CalendarScreen> {
-  int _month = 4; // April
-  int _year = 2026;
-
-  static const _dayHeaders = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
-  static const _monthNames = [
-    '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-  ];
-  static const _hijriMonths = [
-    '', 'Muharram', 'Safar', 'Rabiul Awwal', 'Rabiul Akhir', 'Jumadil Awwal',
-    'Jumadil Akhir', 'Rajab', 'Syaban', 'Ramadhan', 'Syawal', 'Dzulqaidah', 'Dzulhijjah',
-  ];
-
-  // April 2026: starts on Wednesday (offset=3), 30 days, today = 30
-  final _events = {14: 'Nuzulul Qur\'an', 18: 'Idul Fitri', 30: 'Hari ini'};
-
-  void _prev() => setState(() {
-        if (_month == 1) {
-          _month = 12;
-          _year--;
-        } else {
-          _month--;
-        }
-      });
-
-  void _next() => setState(() {
-        if (_month == 12) {
-          _month = 1;
-          _year++;
-        } else {
-          _month++;
-        }
-      });
 
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       backgroundColor: c.bg,
@@ -55,18 +20,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: Column(
           children: [
             AppScreenHeader(
-              title: 'Kalender',
-              subtitle: 'Masehi & Hijriah',
+              title: l10n.calendarTitle,
+              subtitle: l10n.calendarSubtitle,
             ),
             Expanded(
-              child: ListView(
-                children: [
-                  _buildMonthSwitcher(context, c),
-                  const SizedBox(height: 16),
-                  _buildCalendar(context, c),
-                  _buildEvents(context, c),
-                  const SizedBox(height: 28),
-                ],
+              child: Consumer<CalendarProvider>(
+                builder: (context, provider, child) {
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isTablet = constraints.maxWidth > 600;
+                      final days = provider.getDaysInMonth();
+                      final events = days.where((d) => d.isCurrentMonth && d.holidayKey != null).toList();
+
+                      return ListView(
+                        children: [
+                          _buildMonthSwitcher(context, provider, c, l10n),
+                          const SizedBox(height: 16),
+                          _buildCalendarGrid(context, days, c, l10n, isTablet),
+                          _buildEvents(context, provider, events, c, l10n),
+                          const SizedBox(height: 28),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ],
@@ -75,17 +52,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildMonthSwitcher(BuildContext context, AppColors c) {
+  Widget _buildMonthSwitcher(
+    BuildContext context,
+    CalendarProvider provider,
+    AppColors c,
+    AppLocalizations l10n,
+  ) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         children: [
-          _NavBtn(icon: Icons.chevron_left_rounded, onTap: _prev, c: c),
+          _NavBtn(
+            icon: Icons.chevron_left_rounded,
+            onTap: provider.prevMonth,
+            c: c,
+          ),
           Expanded(
             child: Column(
               children: [
                 Text(
-                  '${_monthNames[_month]} $_year',
+                  '${_getMonthName(l10n, provider.month)} ${provider.year}',
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
@@ -96,7 +82,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'Ramadhan — ${_hijriMonths[10]} 1447 H',
+                  provider.getHijriDateRange(l10n),
                   style: GoogleFonts.plusJakartaSans(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -107,19 +93,35 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ],
             ),
           ),
-          _NavBtn(icon: Icons.chevron_right_rounded, onTap: _next, c: c),
+          _NavBtn(
+            icon: Icons.chevron_right_rounded,
+            onTap: provider.nextMonth,
+            c: c,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildCalendar(BuildContext context, AppColors c) {
-    const offset = 3; // April 1 = Wednesday
-    const daysInMonth = 30;
-    const today = 30;
+  Widget _buildCalendarGrid(
+    BuildContext context,
+    List<CalendarDay> days,
+    AppColors c,
+    AppLocalizations l10n,
+    bool isTablet,
+  ) {
+    final dayHeaders = [
+      l10n.daySun,
+      l10n.dayMon,
+      l10n.dayTue,
+      l10n.dayWed,
+      l10n.dayThu,
+      l10n.dayFri,
+      l10n.daySat,
+    ];
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.symmetric(horizontal: isTablet ? 40 : 16),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -129,9 +131,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ),
         child: Column(
           children: [
-            // Day headers
             Row(
-              children: _dayHeaders.map((d) {
+              children: dayHeaders.map((d) {
                 return Expanded(
                   child: Text(
                     d,
@@ -147,76 +148,68 @@ class _CalendarScreenState extends State<CalendarScreen> {
               }).toList(),
             ),
             const SizedBox(height: 6),
-            // Calendar grid
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
-                childAspectRatio: 1,
+                childAspectRatio: isTablet ? 1.5 : 1,
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 2,
               ),
-              itemCount: offset + daysInMonth,
+              itemCount: days.length,
               itemBuilder: (context, index) {
-                if (index < offset) return const SizedBox.shrink();
-                final day = index - offset + 1;
-                final isToday = day == today;
-                final hasEvent = _events.containsKey(day) && day != today;
-                final hijriDay = day + 13;
-                final hijriDisplay = hijriDay > 30 ? hijriDay - 30 : hijriDay;
-                final colIndex = (index) % 7;
-                final isFri = colIndex == 5;
+                final day = days[index];
+                final isFri = day.date.weekday == DateTime.friday;
+                final isSun = day.date.weekday == DateTime.sunday;
+                final hasHoliday = day.holidayKey != null;
 
                 return Container(
                   decoration: BoxDecoration(
-                    color: isToday ? c.navy : Colors.transparent,
+                    color: day.isToday ? c.navy : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
-                    border: hasEvent
-                        ? Border.all(color: c.goldSoft)
+                    border: (hasHoliday && !day.isToday)
+                        ? Border.all(color: c.goldSoft.withOpacity(0.5))
                         : null,
                   ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            '$day',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
-                              color: isToday
-                                  ? Colors.white
-                                  : isFri
-                                      ? c.goldDeep
-                                      : c.ink,
-                            ),
+                  child: Opacity(
+                    opacity: day.isCurrentMonth ? 1.0 : 0.3,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '${day.date.day}',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: day.isToday
+                                ? Colors.white
+                                : (isFri || isSun || hasHoliday)
+                                    ? c.goldDeep
+                                    : c.ink,
                           ),
-                          Text(
-                            '$hijriDisplay',
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 9,
-                              fontWeight: FontWeight.w500,
-                              color: isToday ? c.gold : c.inkMuted,
-                            ),
+                        ),
+                        Text(
+                          '${day.hijriDate.hDay}',
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w500,
+                            color: day.isToday ? c.gold : c.inkMuted,
                           ),
-                        ],
-                      ),
-                      if (hasEvent)
-                        Positioned(
-                          bottom: 3,
-                          child: Container(
+                        ),
+                        if (hasHoliday) ...[
+                          const SizedBox(height: 4),
+                          Container(
                             width: 4,
                             height: 4,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: c.gold,
+                              color: day.isToday ? Colors.white : c.gold,
                             ),
                           ),
-                        ),
-                    ],
+                        ],
+                      ],
+                    ),
                   ),
                 );
               },
@@ -227,20 +220,20 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildEvents(BuildContext context, AppColors c) {
-    final events = [
-      ('14 Apr', '27 Ramadhan 1447', 'Nuzulul Qur\'an', 'Peringatan turunnya Al-Qur\'an'),
-      ('18 Apr', '1 Syawal 1447', 'Idul Fitri', 'Hari Raya'),
-      ('24 Apr', '7 Syawal 1447', 'Puasa Syawal', 'Mulai puasa 6 hari Syawal'),
-    ];
-
+  Widget _buildEvents(
+    BuildContext context,
+    CalendarProvider provider,
+    List<CalendarDay> events,
+    AppColors c,
+    AppLocalizations l10n,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Hari penting bulan ini',
+            l10n.calendarImportantDays,
             style: GoogleFonts.plusJakartaSans(
               fontSize: 13,
               fontWeight: FontWeight.w700,
@@ -248,90 +241,153 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
           const SizedBox(height: 10),
-          ...List.generate(events.length, (i) {
-            final e = events[i];
-            return Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                border: i < events.length - 1
-                    ? Border(bottom: BorderSide(color: c.hairline))
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 48,
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      color: c.surfaceAlt,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(
-                          e.$1.split(' ')[1],
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 9,
-                            color: c.inkMuted,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          e.$1.split(' ')[0],
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: c.ink,
-                          ),
-                        ),
-                      ],
-                    ),
+          if (events.isEmpty)
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Text(
+                  l10n.calendarNoEvents,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    color: c.inkMuted,
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              e.$3,
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                                color: c.ink,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Icon(Icons.star_rounded, color: c.gold, size: 12),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          e.$2,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11.5,
-                            color: c.inkMuted,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          e.$4,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            color: c.inkSoft,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
-            );
-          }),
+            )
+          else
+            ...events.map((e) => _buildEventItem(context, provider, e, c, l10n)),
         ],
       ),
     );
+  }
+
+  Widget _buildEventItem(
+    BuildContext context,
+    CalendarProvider provider,
+    CalendarDay day,
+    AppColors c,
+    AppLocalizations l10n,
+  ) {
+    final holidayName = provider.getHolidayName(l10n, day.holidayKey!);
+    final holidayDesc = provider.getHolidayDescription(l10n, day.holidayKey!);
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: c.hairline)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 46,
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            decoration: BoxDecoration(
+              color: c.surfaceAlt,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  _getMonthName(l10n, day.date.month).substring(0, 3),
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 9,
+                    color: c.inkMuted,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  '${day.date.day}',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: c.ink,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        holidayName,
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: c.ink,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(Icons.star_rounded, color: c.gold, size: 14),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${day.hijriDate.hDay} ${_getMonthNameHijri(l10n, day.hijriDate.hMonth)} ${day.hijriDate.hYear} H',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 11.5,
+                    color: c.inkMuted,
+                  ),
+                ),
+                if (holidayDesc.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    holidayDesc,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      color: c.inkSoft,
+                      height: 1.3,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getMonthName(AppLocalizations l10n, int month) {
+    switch (month) {
+      case 1: return l10n.monthJan;
+      case 2: return l10n.monthFeb;
+      case 3: return l10n.monthMar;
+      case 4: return l10n.monthApr;
+      case 5: return l10n.monthMay;
+      case 6: return l10n.monthJun;
+      case 7: return l10n.monthJul;
+      case 8: return l10n.monthAug;
+      case 9: return l10n.monthSep;
+      case 10: return l10n.monthOct;
+      case 11: return l10n.monthNov;
+      case 12: return l10n.monthDec;
+      default: return '';
+    }
+  }
+
+  String _getMonthNameHijri(AppLocalizations l10n, int month) {
+    switch (month) {
+      case 1: return l10n.hijriMonth1;
+      case 2: return l10n.hijriMonth2;
+      case 3: return l10n.hijriMonth3;
+      case 4: return l10n.hijriMonth4;
+      case 5: return l10n.hijriMonth5;
+      case 6: return l10n.hijriMonth6;
+      case 7: return l10n.hijriMonth7;
+      case 8: return l10n.hijriMonth8;
+      case 9: return l10n.hijriMonth9;
+      case 10: return l10n.hijriMonth10;
+      case 11: return l10n.hijriMonth11;
+      case 12: return l10n.hijriMonth12;
+      default: return '';
+    }
   }
 }
 

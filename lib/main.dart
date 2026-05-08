@@ -20,6 +20,8 @@ import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
 import 'package:muslimate/features/location/logic/location_permission_provider.dart';
 import 'package:muslimate/core/logic/location_provider.dart';
 
+import 'package:muslimate/features/calendar/logic/calendar_provider.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
@@ -34,6 +36,7 @@ void main() async {
 
         ChangeNotifierProvider(create: (_) => PrayerProvider()),
         ChangeNotifierProvider(create: (_) => QiblaProvider()),
+        ChangeNotifierProvider(create: (_) => CalendarProvider()),
       ],
       child: const MuslimateApp(),
     ),

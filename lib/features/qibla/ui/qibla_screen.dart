@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
+import 'package:muslimate/generated/assets/assets.gen.dart';
 
 class QiblaScreen extends StatelessWidget {
   const QiblaScreen({super.key});
@@ -144,25 +145,6 @@ class _CompassView extends StatefulWidget {
 }
 
 class _CompassViewState extends State<_CompassView> with SingleTickerProviderStateMixin {
-  late double _lastHeading;
-  
-  @override
-  void initState() {
-    super.initState();
-    _lastHeading = widget.heading;
-  }
-
-  double _getNormalizedHeading(double target) {
-    double diff = target - _lastHeading;
-    if (diff > 180) {
-      _lastHeading += 360;
-    } else if (diff < -180) {
-      _lastHeading -= 360;
-    }
-    _lastHeading = target;
-    return target;
-  }
-
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
@@ -201,34 +183,53 @@ class _CompassViewState extends State<_CompassView> with SingleTickerProviderSta
                 border: Border.all(color: c.hairline),
               ),
             ),
-            // rotating tick marks and labels
+            // rotating elements
             TweenAnimationBuilder<double>(
               tween: Tween<double>(begin: 0, end: widget.heading),
-              duration: const Duration(milliseconds: 2000),
+              duration: const Duration(milliseconds: 300),
               curve: Curves.easeOutCubic,
               builder: (context, value, child) {
-                return Transform.rotate(
-                  angle: -value * math.pi / 180,
-                  child: CustomPaint(
-                    size: Size(widget.size, widget.size),
-                    painter: _CompassFacePainter(
-                      tickColor: c.hairline,
-                      majorColor: c.gold,
-                      labelColor: c.inkMuted,
-                      northColor: c.gold,
-                      kiblatBearing: widget.qiblaBearing,
-                      kiblatColor: c.gold,
-                      kiblatNavyColor: c.navy,
-                      headingForLabels: value,
-                      radius: widget.size / 2,
-                      labels: [
-                        AppLocalizations.of(context)!.north,
-                        AppLocalizations.of(context)!.east,
-                        AppLocalizations.of(context)!.south,
-                        AppLocalizations.of(context)!.west,
-                      ],
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // compass face (ticks and labels)
+                    Transform.rotate(
+                      angle: -value * math.pi / 180,
+                      child: CustomPaint(
+                        size: Size(widget.size, widget.size),
+                        painter: _CompassFacePainter(
+                          tickColor: c.hairline,
+                          majorColor: c.gold,
+                          labelColor: c.inkMuted,
+                          northColor: c.gold,
+                          headingForLabels: value,
+                          radius: widget.size / 2,
+                          labels: [
+                            AppLocalizations.of(context)!.north,
+                            AppLocalizations.of(context)!.east,
+                            AppLocalizations.of(context)!.south,
+                            AppLocalizations.of(context)!.west,
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                    // kaaba marker rotating relative to face
+                    Transform.rotate(
+                      angle: (widget.qiblaBearing - value) * math.pi / 180,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          SizedBox(width: widget.size, height: widget.size),
+                          Positioned(
+                            top: widget.size * 0.05,
+                            child: AppAssets.icons.icKaabaMarker.svg(
+                              width: widget.size * 0.13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
@@ -248,7 +249,7 @@ class _CompassViewState extends State<_CompassView> with SingleTickerProviderSta
                 ),
               ),
             ),
-            // center dot with kaaba icon
+            // center dot with static kaaba icon
             Container(
               width: widget.size * 0.2,
               height: widget.size * 0.2,
@@ -263,7 +264,12 @@ class _CompassViewState extends State<_CompassView> with SingleTickerProviderSta
                   )
                 ],
               ),
-              child: Icon(Icons.explore_rounded, color: c.gold, size: widget.size * 0.1),
+              child: Center(
+                child: AppAssets.icons.icKaabaStatic.svg(
+                  width: widget.size * 0.1,
+                  colorFilter: ColorFilter.mode(c.gold, BlendMode.srcIn),
+                ),
+              ),
             ),
           ],
         ),
@@ -360,9 +366,6 @@ class _CompassFacePainter extends CustomPainter {
   final Color majorColor;
   final Color labelColor;
   final Color northColor;
-  final double kiblatBearing;
-  final Color kiblatColor;
-  final Color kiblatNavyColor;
   final double headingForLabels;
   final double radius;
   final List<String> labels;
@@ -372,9 +375,6 @@ class _CompassFacePainter extends CustomPainter {
     required this.majorColor,
     required this.labelColor,
     required this.northColor,
-    required this.kiblatBearing,
-    required this.kiblatColor,
-    required this.kiblatNavyColor,
     required this.headingForLabels,
     required this.radius,
     required this.labels,
@@ -435,45 +435,6 @@ class _CompassFacePainter extends CustomPainter {
       tp.paint(canvas, Offset(-tp.width / 2, -tp.height / 2));
       canvas.restore();
     }
-
-    // Kiblat marker
-    final ka = kiblatBearing * math.pi / 180;
-    final kx = center.dx + math.sin(ka) * (outerR - 30);
-    final ky = center.dy - math.cos(ka) * (outerR - 30);
-
-    canvas.save();
-    canvas.translate(kx, ky);
-    canvas.rotate(headingForLabels * math.pi / 180);
-
-    canvas.drawCircle(
-      Offset.zero,
-      radius * 0.12,
-      Paint()..color = kiblatColor,
-    );
-
-    final kPaint = Paint()
-      ..color = kiblatNavyColor
-      ..style = PaintingStyle.fill;
-    final squareSize = radius * 0.07;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromCenter(center: Offset.zero, width: squareSize * 2, height: squareSize * 1.4),
-        const Radius.circular(1),
-      ),
-      kPaint,
-    );
-
-    final roofPaint = Paint()
-      ..color = kiblatColor.withOpacity(0.8)
-      ..strokeWidth = 1.4
-      ..style = PaintingStyle.stroke;
-    final roofPath = Path()
-      ..moveTo(-squareSize * 1.2, -squareSize * 0.5)
-      ..lineTo(0, -squareSize * 1.0)
-      ..lineTo(squareSize * 1.2, -squareSize * 0.5);
-    canvas.drawPath(roofPath, roofPaint);
-
-    canvas.restore();
   }
 
   @override

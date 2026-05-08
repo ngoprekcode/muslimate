@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:muslimate/features/home/ui/widgets/home_hero_card.dart';
-import 'package:muslimate/features/home/ui/widgets/home_location_permission.dart';
 import 'package:muslimate/features/location/logic/location_permission_provider.dart';
 import 'package:muslimate/features/location/ui/location_permission_screen.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
@@ -8,14 +6,21 @@ import 'package:muslimate/core/logic/location_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-class HomeHeaderSection extends StatefulWidget {
-  const HomeHeaderSection({super.key});
+import 'home_header_card.dart';
+import 'home_header_loading.dart';
+import 'home_header_permission.dart';
+
+class HomeHeader extends StatefulWidget {
+  const HomeHeader({super.key});
 
   @override
-  State<HomeHeaderSection> createState() => _HomeHeaderSectionState();
+  State<HomeHeader> createState() => _HomeHeaderState();
 }
 
-class _HomeHeaderSectionState extends State<HomeHeaderSection> {
+class _HomeHeaderState extends State<HomeHeader>
+    with AutomaticKeepAliveClientMixin {
+  late LocationPermissionProvider _locationPermissionProvider;
+
   @override
   void initState() {
     super.initState();
@@ -23,27 +28,25 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
   }
 
   void _initLocationListener() {
-    final locPermissionProvider = context.read<LocationPermissionProvider>();
-    if (locPermissionProvider.state == LocationPermissionState.granted) {
+    _locationPermissionProvider = context.read<LocationPermissionProvider>();
+    if (_locationPermissionProvider.state == LocationPermissionState.granted) {
       _fetchLocation();
     }
-
-    locPermissionProvider.addListener(_onPermissionChanged);
+    _locationPermissionProvider.addListener(_onPermissionChanged);
   }
 
   @override
   void dispose() {
-    if (mounted) {
-      context.read<LocationPermissionProvider>().removeListener(
-        _onPermissionChanged,
-      );
-    }
+    _locationPermissionProvider.removeListener(_onPermissionChanged);
     super.dispose();
   }
 
+  @override
+  bool get wantKeepAlive => true;
+
   void _onPermissionChanged() {
     if (!mounted) return;
-    final state = context.read<LocationPermissionProvider>().state;
+    final state = _locationPermissionProvider.state;
     if (state == LocationPermissionState.granted) {
       _fetchLocation();
     }
@@ -58,12 +61,14 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
       context.read<PrayerProvider>().updateLocation(
         position.latitude,
         position.longitude,
+        name: locProvider.address,
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final locState = context.watch<LocationProvider>().state;
     final locPermissionState = context
         .watch<LocationPermissionProvider>()
@@ -74,7 +79,7 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
     switch (locPermissionState) {
       case LocationPermissionState.idle:
       case LocationPermissionState.loading:
-        content = const _HomeHeaderSectionLoading(key: ValueKey('loading'));
+        content = const HomeHeaderLoading(key: ValueKey('loading'));
         break;
       case LocationPermissionState.denied:
       case LocationPermissionState.blocked:
@@ -83,14 +88,14 @@ class _HomeHeaderSectionState extends State<HomeHeaderSection> {
       case LocationPermissionState.granted:
         switch (locState) {
           case LocationState.done:
-            content = const HomeHeroCard(key: ValueKey('hero'));
+            content = const HomeHeaderCard(key: ValueKey('hero'));
             break;
           case LocationState.error:
             content = const _HomeLocationPermission(key: ValueKey('error'));
             break;
           case LocationState.idle:
           case LocationState.loading:
-            content = const _HomeHeaderSectionLoading(key: ValueKey('loading'));
+            content = const HomeHeaderLoading(key: ValueKey('loading'));
             break;
         }
     }
@@ -104,7 +109,7 @@ class _HomeLocationPermission extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return HomeLocationPermission(
+    return HomeHeaderPermission(
       onPressed: () {
         Navigator.push(
           context,
@@ -116,6 +121,7 @@ class _HomeLocationPermission extends StatelessWidget {
                 context.read<PrayerProvider>().updateLocation(
                   position.latitude,
                   position.longitude,
+                  name: context.read<LocationProvider>().address,
                 );
                 Navigator.pop(context);
               },
@@ -123,22 +129,6 @@ class _HomeLocationPermission extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class _HomeHeaderSectionLoading extends StatelessWidget {
-  const _HomeHeaderSectionLoading({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      child: AppShimmer(
-        width: double.infinity,
-        height: 180,
-        borderRadius: BorderRadius.all(Radius.circular(22)),
-      ),
     );
   }
 }

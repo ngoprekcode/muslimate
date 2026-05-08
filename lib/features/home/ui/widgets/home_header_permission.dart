@@ -5,10 +5,10 @@ import 'package:muslimate/generated/assets/assets.gen.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 
-class HomeLocationPermission extends StatelessWidget {
+class HomeHeaderPermission extends StatelessWidget {
   final VoidCallback? onPressed;
 
-  const HomeLocationPermission({
+  const HomeHeaderPermission({
     super.key,
     this.onPressed,
   });

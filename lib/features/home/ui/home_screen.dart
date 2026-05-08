@@ -3,7 +3,7 @@ import 'package:muslimate/core/app_colors.dart';
 
 import 'widgets/home_ayat_card.dart';
 import 'widgets/home_hadist_slider.dart';
-import 'widgets/home_header_section.dart';
+import 'widgets/home_header.dart';
 import 'widgets/home_prayer_rail.dart';
 import 'widgets/home_quick_actions.dart';
 import 'widgets/home_top_bar.dart';
@@ -24,7 +24,7 @@ class HomeScreen extends StatelessWidget {
           children: const [
             HomeTopBar(),
             SizedBox(height: 16),
-            HomeHeaderSection(),
+            HomeHeader(),
             HomePrayerRail(),
             HomeQuickActions(),
             HomeAyatCard(),

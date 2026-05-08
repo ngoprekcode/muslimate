@@ -61,8 +61,8 @@ class LocationProvider extends ChangeNotifier {
       if (placemarks.isNotEmpty) {
         final p = placemarks.first;
         final parts = [
-          p.subLocality,
           p.locality,
+          p.subAdministrativeArea,
         ].where((s) => s != null && s.isNotEmpty).join(', ');
 
         return parts.isNotEmpty ? parts : 'Lokasi Terdeteksi';

@@ -1,10 +1,9 @@
 import 'package:prayers_times/prayers_times.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:geocoding/geocoding.dart';
 
 class PrayerProvider extends ChangeNotifier {
-// ... (omitted parts for brevity, but I will provide full replacement)
+  // ... (omitted parts for brevity, but I will provide full replacement)
   PrayerTimes? _prayerTimes;
   PrayerTimes? get prayerTimes => _prayerTimes;
 
@@ -27,25 +26,10 @@ class PrayerProvider extends ChangeNotifier {
   }
 
   Future<void> updateLocation(double lat, double lng, {String? name}) async {
+    _locationName = 'Lokasi Terdeteksi';
     _coordinates = Coordinates(lat, lng);
     if (name != null) {
       _locationName = name;
-    } else {
-      _locationName = 'Mencari alamat...';
-      notifyListeners();
-      try {
-        List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
-        if (placemarks.isNotEmpty) {
-          final p = placemarks.first;
-          // Format: "Kecamatan, Kota" atau yang tersedia
-          final subLocality = p.subLocality ?? '';
-          final locality = p.locality ?? '';
-          _locationName = [subLocality, locality].where((s) => s.isNotEmpty).join(', ');
-          if (_locationName.isEmpty) _locationName = 'Lokasi Terdeteksi';
-        }
-      } catch (_) {
-        _locationName = 'Lokasi Terdeteksi';
-      }
     }
     _calculatePrayerTimes();
   }
@@ -109,7 +93,8 @@ class PrayerProvider extends ChangeNotifier {
     if (now.isBefore(_prayerTimes!.fajrStartTime!)) return PrayerType.fajr;
     if (now.isBefore(_prayerTimes!.dhuhrStartTime!)) return PrayerType.dhuhr;
     if (now.isBefore(_prayerTimes!.asrStartTime!)) return PrayerType.asr;
-    if (now.isBefore(_prayerTimes!.maghribStartTime!)) return PrayerType.maghrib;
+    if (now.isBefore(_prayerTimes!.maghribStartTime!))
+      return PrayerType.maghrib;
     if (now.isBefore(_prayerTimes!.ishaStartTime!)) return PrayerType.isha;
 
     return PrayerType.fajr;

@@ -25,11 +25,10 @@ class PrayerProvider extends ChangeNotifier {
     params.madhab = PrayerMadhab.shafi;
   }
 
-  Future<void> updateLocation(double lat, double lng, {String? name}) async {
-    _locationName = 'Lokasi Terdeteksi';
+  Future<void> updateLocation(double lat, double lng, {String? address}) async {
     _coordinates = Coordinates(lat, lng);
-    if (name != null) {
-      _locationName = name;
+    if (address != null) {
+      _locationName = address;
     }
     _calculatePrayerTimes();
   }

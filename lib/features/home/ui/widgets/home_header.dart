@@ -29,9 +29,6 @@ class _HomeHeaderState extends State<HomeHeader>
 
   void _initLocationListener() {
     _locationPermissionProvider = context.read<LocationPermissionProvider>();
-    if (_locationPermissionProvider.state == LocationPermissionState.granted) {
-      _fetchLocation();
-    }
     _locationPermissionProvider.addListener(_onPermissionChanged);
   }
 
@@ -61,7 +58,7 @@ class _HomeHeaderState extends State<HomeHeader>
       context.read<PrayerProvider>().updateLocation(
         position.latitude,
         position.longitude,
-        name: locProvider.address,
+        address: locProvider.address,
       );
     }
   }
@@ -121,7 +118,7 @@ class _HomeLocationPermission extends StatelessWidget {
                 context.read<PrayerProvider>().updateLocation(
                   position.latitude,
                   position.longitude,
-                  name: context.read<LocationProvider>().address,
+                  address: context.read<LocationProvider>().address,
                 );
                 Navigator.pop(context);
               },

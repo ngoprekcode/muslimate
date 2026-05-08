@@ -10,17 +10,17 @@ class HomeQuickActions extends StatelessWidget {
     _QuickAction('quran', "Al-Qur'an", Icons.menu_book_outlined),
     _QuickAction('qibla', 'Kiblat', Icons.explore_outlined),
     _QuickAction('calendar', 'Kalender', Icons.calendar_today_outlined),
-    _QuickAction('dhikr', 'Wirid & Doa', Icons.spa_outlined),
+    _QuickAction('dhikr', 'Wirid', Icons.spa_outlined),
     _QuickAction('hadith', 'Hadist', Icons.format_quote_outlined),
     _QuickAction('schedule', 'Jadwal', Icons.access_time_outlined),
     _QuickAction('mosque', 'Masjid', Icons.mosque_outlined),
-    _QuickAction('asmaul', "Asma'ul Husna", Icons.auto_awesome_outlined),
+    _QuickAction('asmaul', "Asma", Icons.auto_awesome_outlined),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 22, 20, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

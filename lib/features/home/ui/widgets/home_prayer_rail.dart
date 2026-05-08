@@ -1,29 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/features/home/data/models/home_prayer_type.dart';
+import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
+import 'package:provider/provider.dart';
+import 'package:prayers_times/prayers_times.dart';
 
 class HomePrayerRail extends StatelessWidget {
   const HomePrayerRail({super.key});
 
-  static final _prayers = [
-    _Prayer('Subuh', '04:32', AppAssets.icons.icDawn, false),
-    _Prayer('Dzuhur', '11:58', AppAssets.icons.icNoon, true),
-    _Prayer('Ashar', '15:21', AppAssets.icons.icAfternoon, false),
-    _Prayer('Maghrib', '17:54', AppAssets.icons.icSunset, false),
-    _Prayer('Isya', '19:06', AppAssets.icons.icNight, false),
-  ];
-
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
+    final prayerProvider = context.watch<PrayerProvider>();
+    final prayerTimes = prayerProvider.prayerTimes;
+    final nextPrayer = prayerProvider.getNextPrayer();
+
+    final prayers = [
+      _Prayer(
+        HomePrayerType.dawn.labelPrayer,
+        prayerProvider.formatTime(prayerTimes?.fajrStartTime),
+        AppAssets.icons.icDawn,
+        nextPrayer == PrayerType.fajr,
+      ),
+      _Prayer(
+        HomePrayerType.noon.labelPrayer,
+        prayerProvider.formatTime(prayerTimes?.dhuhrStartTime),
+        AppAssets.icons.icNoon,
+        nextPrayer == PrayerType.dhuhr,
+      ),
+      _Prayer(
+        HomePrayerType.afternoon.labelPrayer,
+        prayerProvider.formatTime(prayerTimes?.asrStartTime),
+        AppAssets.icons.icAfternoon,
+        nextPrayer == PrayerType.asr,
+      ),
+      _Prayer(
+        HomePrayerType.sunset.labelPrayer,
+        prayerProvider.formatTime(prayerTimes?.maghribStartTime),
+        AppAssets.icons.icSunset,
+        nextPrayer == PrayerType.maghrib,
+      ),
+      _Prayer(
+        HomePrayerType.night.labelPrayer,
+        prayerProvider.formatTime(prayerTimes?.ishaStartTime),
+        AppAssets.icons.icNight,
+        nextPrayer == PrayerType.isha,
+      ),
+    ];
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        children: _prayers.map((p) {
+        children: prayers.map((p) {
+          final isLast = p == prayers.last;
           return Expanded(
             child: Container(
-              margin: EdgeInsets.only(right: p == _prayers.last ? 0 : 8),
+              margin: EdgeInsets.only(right: isLast ? 0 : 8),
               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
               decoration: BoxDecoration(
                 color: p.active ? c.goldSoft : c.surface,
@@ -32,7 +66,7 @@ class HomePrayerRail extends StatelessWidget {
               ),
               child: Column(
                 children: [
-                  p.prayerTime.svg(
+                  p.icon.svg(
                     height: 20,
                     colorFilter: ColorFilter.mode(
                       p.active ? c.goldDeep : c.inkSoft,
@@ -71,7 +105,7 @@ class HomePrayerRail extends StatelessWidget {
 class _Prayer {
   final String name;
   final String time;
-  final SvgGenImage prayerTime;
+  final SvgGenImage icon;
   final bool active;
-  const _Prayer(this.name, this.time, this.prayerTime, this.active);
+  const _Prayer(this.name, this.time, this.icon, this.active);
 }

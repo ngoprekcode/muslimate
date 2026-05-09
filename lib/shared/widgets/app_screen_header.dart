@@ -43,16 +43,21 @@ class AppScreenHeader extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     subtitle!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       color: c.inkMuted,
                     ),
                   ),
+
                 ],
               ],
             ),
           ),
-          if (trailing != null) trailing!,
+          const SizedBox(width: 12),
+          ?trailing,
         ],
       ),
     );

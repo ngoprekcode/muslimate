@@ -71,8 +71,7 @@ class _HomeHeaderCardState extends State<HomeHeaderCard> {
     final nextTime = prayerProvider.getNextPrayerTime();
     final address = prayerProvider.locationName;
 
-    final today = CalendarDay(date: DateTime.now(), isCurrentMonth: true);
-    final hijriDateStr = '${today.hijriDate.hDay} ${_getHijriMonthName(l10n, today.hijriDate.hMonth)} ${today.hijriDate.hYear}';
+    final hijriDateStr = prayerProvider.getHijriDate(l10n, date: DateTime.now());
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -228,23 +227,5 @@ class _HomeHeaderCardState extends State<HomeHeaderCard> {
         ),
       ),
     );
-  }
-
-  String _getHijriMonthName(AppLocalizations l10n, int month) {
-    switch (month) {
-      case 1: return l10n.hijriMonth1;
-      case 2: return l10n.hijriMonth2;
-      case 3: return l10n.hijriMonth3;
-      case 4: return l10n.hijriMonth4;
-      case 5: return l10n.hijriMonth5;
-      case 6: return l10n.hijriMonth6;
-      case 7: return l10n.hijriMonth7;
-      case 8: return l10n.hijriMonth8;
-      case 9: return l10n.hijriMonth9;
-      case 10: return l10n.hijriMonth10;
-      case 11: return l10n.hijriMonth11;
-      case 12: return l10n.hijriMonth12;
-      default: return '';
-    }
   }
 }

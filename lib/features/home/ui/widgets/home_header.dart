@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:muslimate/features/location/logic/location_permission_provider.dart';
 import 'package:muslimate/features/location/ui/location_permission_screen.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
+import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
 import 'package:muslimate/core/logic/location_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
@@ -84,6 +85,10 @@ class _HomeHeaderState extends State<HomeHeader>
         position.longitude,
         address: locProvider.address,
       );
+      context.read<QiblaProvider>().updateLocation(
+        position.latitude,
+        position.longitude,
+      );
     }
   }
 
@@ -143,6 +148,10 @@ class _HomeLocationPermission extends StatelessWidget {
                   position.latitude,
                   position.longitude,
                   address: locProvider.address,
+                );
+                context.read<QiblaProvider>().updateLocation(
+                  position.latitude,
+                  position.longitude,
                 );
                 Navigator.pop(context);
               },

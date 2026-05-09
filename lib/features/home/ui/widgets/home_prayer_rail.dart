@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
-import 'package:muslimate/features/home/data/models/home_prayer_type.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
+import 'package:muslimate/shared/models/app_prayer_type.dart';
 import 'package:provider/provider.dart';
 import 'package:prayers_times/prayers_times.dart';
 
@@ -19,31 +19,31 @@ class HomePrayerRail extends StatelessWidget {
 
     final prayers = [
       _Prayer(
-        HomePrayerType.dawn.labelPrayer,
+        AppPrayerType.dawn.labelPrayer,
         prayerProvider.formatTime(prayerTimes?.fajrStartTime),
         AppAssets.icons.icDawn,
         nextPrayer == PrayerType.fajr,
       ),
       _Prayer(
-        HomePrayerType.noon.labelPrayer,
+        AppPrayerType.noon.labelPrayer,
         prayerProvider.formatTime(prayerTimes?.dhuhrStartTime),
         AppAssets.icons.icNoon,
         nextPrayer == PrayerType.dhuhr,
       ),
       _Prayer(
-        HomePrayerType.afternoon.labelPrayer,
+        AppPrayerType.afternoon.labelPrayer,
         prayerProvider.formatTime(prayerTimes?.asrStartTime),
         AppAssets.icons.icAfternoon,
         nextPrayer == PrayerType.asr,
       ),
       _Prayer(
-        HomePrayerType.sunset.labelPrayer,
+        AppPrayerType.sunset.labelPrayer,
         prayerProvider.formatTime(prayerTimes?.maghribStartTime),
         AppAssets.icons.icSunset,
         nextPrayer == PrayerType.maghrib,
       ),
       _Prayer(
-        HomePrayerType.night.labelPrayer,
+        AppPrayerType.night.labelPrayer,
         prayerProvider.formatTime(prayerTimes?.ishaStartTime),
         AppAssets.icons.icNight,
         nextPrayer == PrayerType.isha,

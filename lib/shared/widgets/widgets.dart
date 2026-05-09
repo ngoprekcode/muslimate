@@ -8,7 +8,7 @@ export 'app_dashed_border_painter.dart';
 export 'app_icon_box.dart';
 export 'app_info_list.dart';
 export 'app_pill.dart';
-export 'app_prayer_icon.dart';
+export '../models/app_prayer_type.dart';
 export 'app_screen_header.dart';
 export 'app_section_title.dart';
 export 'app_shimmer.dart';

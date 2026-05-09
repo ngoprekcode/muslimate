@@ -30,7 +30,11 @@ class CalendarScreen extends StatelessWidget {
                     builder: (context, constraints) {
                       final isTablet = constraints.maxWidth > 600;
                       final days = provider.getDaysInMonth();
-                      final events = days.where((d) => d.isCurrentMonth && d.holidayKey != null).toList();
+                      final events = days
+                          .where(
+                            (d) => d.isCurrentMonth && d.holidayKey != null,
+                          )
+                          .toList();
 
                       return ListView(
                         children: [
@@ -169,7 +173,7 @@ class CalendarScreen extends StatelessWidget {
                     color: day.isToday ? c.navy : Colors.transparent,
                     borderRadius: BorderRadius.circular(10),
                     border: (hasHoliday && !day.isToday)
-                        ? Border.all(color: c.goldSoft.withOpacity(0.5))
+                        ? Border.all(color: c.goldSoft.withValues(alpha: 0.5))
                         : null,
                   ),
                   child: Opacity(
@@ -185,8 +189,8 @@ class CalendarScreen extends StatelessWidget {
                             color: day.isToday
                                 ? Colors.white
                                 : (isFri || isSun || hasHoliday)
-                                    ? c.goldDeep
-                                    : c.ink,
+                                ? c.goldDeep
+                                : c.ink,
                           ),
                         ),
                         Text(
@@ -255,7 +259,9 @@ class CalendarScreen extends StatelessWidget {
               ),
             )
           else
-            ...events.map((e) => _buildEventItem(context, provider, e, c, l10n)),
+            ...events.map(
+              (e) => _buildEventItem(context, provider, e, c, l10n),
+            ),
         ],
       ),
     );
@@ -270,7 +276,7 @@ class CalendarScreen extends StatelessWidget {
   ) {
     final holidayName = provider.getHolidayName(l10n, day.holidayKey!);
     final holidayDesc = provider.getHolidayDescription(l10n, day.holidayKey!);
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12),
       decoration: BoxDecoration(
@@ -356,37 +362,63 @@ class CalendarScreen extends StatelessWidget {
 
   String _getMonthName(AppLocalizations l10n, int month) {
     switch (month) {
-      case 1: return l10n.monthJan;
-      case 2: return l10n.monthFeb;
-      case 3: return l10n.monthMar;
-      case 4: return l10n.monthApr;
-      case 5: return l10n.monthMay;
-      case 6: return l10n.monthJun;
-      case 7: return l10n.monthJul;
-      case 8: return l10n.monthAug;
-      case 9: return l10n.monthSep;
-      case 10: return l10n.monthOct;
-      case 11: return l10n.monthNov;
-      case 12: return l10n.monthDec;
-      default: return '';
+      case 1:
+        return l10n.monthJan;
+      case 2:
+        return l10n.monthFeb;
+      case 3:
+        return l10n.monthMar;
+      case 4:
+        return l10n.monthApr;
+      case 5:
+        return l10n.monthMay;
+      case 6:
+        return l10n.monthJun;
+      case 7:
+        return l10n.monthJul;
+      case 8:
+        return l10n.monthAug;
+      case 9:
+        return l10n.monthSep;
+      case 10:
+        return l10n.monthOct;
+      case 11:
+        return l10n.monthNov;
+      case 12:
+        return l10n.monthDec;
+      default:
+        return '';
     }
   }
 
   String _getMonthNameHijri(AppLocalizations l10n, int month) {
     switch (month) {
-      case 1: return l10n.hijriMonth1;
-      case 2: return l10n.hijriMonth2;
-      case 3: return l10n.hijriMonth3;
-      case 4: return l10n.hijriMonth4;
-      case 5: return l10n.hijriMonth5;
-      case 6: return l10n.hijriMonth6;
-      case 7: return l10n.hijriMonth7;
-      case 8: return l10n.hijriMonth8;
-      case 9: return l10n.hijriMonth9;
-      case 10: return l10n.hijriMonth10;
-      case 11: return l10n.hijriMonth11;
-      case 12: return l10n.hijriMonth12;
-      default: return '';
+      case 1:
+        return l10n.hijriMonth1;
+      case 2:
+        return l10n.hijriMonth2;
+      case 3:
+        return l10n.hijriMonth3;
+      case 4:
+        return l10n.hijriMonth4;
+      case 5:
+        return l10n.hijriMonth5;
+      case 6:
+        return l10n.hijriMonth6;
+      case 7:
+        return l10n.hijriMonth7;
+      case 8:
+        return l10n.hijriMonth8;
+      case 9:
+        return l10n.hijriMonth9;
+      case 10:
+        return l10n.hijriMonth10;
+      case 11:
+        return l10n.hijriMonth11;
+      case 12:
+        return l10n.hijriMonth12;
+      default:
+        return '';
     }
   }
 }

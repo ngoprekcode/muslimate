@@ -2,11 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
-import 'package:muslimate/features/home/data/models/home_prayer_type.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
-import 'package:muslimate/features/calendar/logic/calendar_provider.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
+import 'package:muslimate/shared/models/app_prayer_type.dart';
 import 'package:provider/provider.dart';
 
 import 'home_header_loading.dart';
@@ -67,7 +66,7 @@ class _HomeHeaderCardState extends State<HomeHeaderCard> {
       return HomeHeaderLoading();
     }
 
-    final type = HomePrayerType.fromPrayerType(nextPrayerStr);
+    final type = AppPrayerType.fromPrayerType(nextPrayerStr);
     final nextTime = prayerProvider.getNextPrayerTime();
     final address = prayerProvider.locationName;
 

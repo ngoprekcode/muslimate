@@ -80,6 +80,14 @@ class PrayerDayItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isSelected = DateUtils.isSameDay(date, provider.selectedDate);
+    final isToday = DateUtils.isSameDay(date, DateTime.now());
+
+    Color borderColor = c.hairline;
+    if (isSelected) {
+      borderColor = c.ink;
+    } else if (isToday) {
+      borderColor = c.inkMuted;
+    }
 
     return GestureDetector(
       onTap: () => provider.updateDate(date),
@@ -89,7 +97,7 @@ class PrayerDayItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? c.navy : c.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: isSelected ? c.navy : c.hairline),
+          border: Border.all(color: borderColor),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

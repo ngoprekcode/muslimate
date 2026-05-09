@@ -18,13 +18,15 @@ class HomeHeader extends StatefulWidget {
 }
 
 class _HomeHeaderState extends State<HomeHeader>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   late LocationPermissionProvider _locationPermissionProvider;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initLocationListener();
+    _checkInitialLocation();
   }
 
   void _initLocationListener() {
@@ -32,10 +34,29 @@ class _HomeHeaderState extends State<HomeHeader>
     _locationPermissionProvider.addListener(_onPermissionChanged);
   }
 
+  void _checkInitialLocation() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_locationPermissionProvider.state == LocationPermissionState.granted) {
+        _fetchLocation();
+      }
+    });
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _locationPermissionProvider.removeListener(_onPermissionChanged);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_locationPermissionProvider.state == LocationPermissionState.granted) {
+        _fetchLocation();
+      }
+    }
   }
 
   @override
@@ -51,7 +72,10 @@ class _HomeHeaderState extends State<HomeHeader>
 
   Future<void> _fetchLocation() async {
     final locProvider = context.read<LocationProvider>();
-    if (locProvider.hasLocation) return;
+    
+    // If already has location and not in idle state, we skip redundant fetches.
+    // But if it's idle and permission is granted, we MUST fetch.
+    if (locProvider.hasLocation && locProvider.state != LocationState.idle) return;
 
     final position = await locProvider.fetchLocation();
     if (position != null && mounted) {
@@ -113,11 +137,12 @@ class _HomeLocationPermission extends StatelessWidget {
           MaterialPageRoute(
             builder: (context) => LocationPermissionScreen(
               onGranted: (position) {
-                context.read<LocationProvider>().updatePosition(position);
+                final locProvider = context.read<LocationProvider>();
+                locProvider.updatePosition(position);
                 context.read<PrayerProvider>().updateLocation(
                   position.latitude,
                   position.longitude,
-                  address: context.read<LocationProvider>().address,
+                  address: locProvider.address,
                 );
                 Navigator.pop(context);
               },

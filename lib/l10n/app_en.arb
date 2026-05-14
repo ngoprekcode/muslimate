@@ -117,5 +117,14 @@
   "holidayTasua": "Day of Tasu'a",
   "holidayTasuaDesc": "Sunnah fasting before the Day of Ashura",
   "holidayTasyrik": "Days of Tashreeq",
-  "holidayTasyrikDesc": "Days where fasting is prohibited after Eid al-Adha"
+  "holidayTasyrikDesc": "Days where fasting is prohibited after Eid al-Adha",
+
+  "asmaulHusnaTitle": "Asma'ul Husna",
+  "asmaulHusnaSubtitle": "99 beautiful names of Allah \ufdfb",
+  "asmaulHusnaHadithTitle": "HADITH",
+  "asmaulHusnaHadithQuote": "Indeed, Allah has 99 names. Whoever memorizes them will enter Paradise.",
+  "asmaulHusnaHadithSource": "Narrated by Bukhari & Muslim",
+  "asmaulHusnaSearchHint": "Search name (latin, meaning, or number)...",
+  "asmaulHusnaListHeader": "List of 99 Names",
+  "asmaulHusnaListCounter": "99 names"
 }

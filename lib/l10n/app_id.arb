@@ -97,5 +97,14 @@
   "holidayTasua": "Hari Tasu'a",
   "holidayTasuaDesc": "Puasa sunnah sebelum hari Asyura pada 9 Muharram",
   "holidayTasyrik": "Hari Tasyrik",
-  "holidayTasyrikDesc": "Hari diharamkan berpuasa setelah Idul Adha (11-13 Dzulhijjah)"
+  "holidayTasyrikDesc": "Hari diharamkan berpuasa setelah Idul Adha (11-13 Dzulhijjah)",
+
+  "asmaulHusnaTitle": "Asma'ul Husna",
+  "asmaulHusnaSubtitle": "99 nama indah Allah \ufdfb",
+  "asmaulHusnaHadithTitle": "HADITS",
+  "asmaulHusnaHadithQuote": "Sesungguhnya Allah memiliki 99 nama. Barangsiapa menghafalnya akan masuk surga.",
+  "asmaulHusnaHadithSource": "HR. Bukhari & Muslim",
+  "asmaulHusnaSearchHint": "Cari nama (latin, arti, atau nomor)...",
+  "asmaulHusnaListHeader": "Daftar 99 Nama",
+  "asmaulHusnaListCounter": "99 nama"
 }

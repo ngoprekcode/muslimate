@@ -21,6 +21,8 @@ import 'package:muslimate/features/location/logic/location_permission_provider.d
 import 'package:muslimate/core/logic/location_provider.dart';
 
 import 'package:muslimate/features/calendar/logic/calendar_provider.dart';
+import 'package:muslimate/features/asmaulhusna/logic/asmaul_husna_provider.dart';
+import 'package:muslimate/features/asmaulhusna/ui/asmaulhusna_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +39,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => PrayerProvider()),
         ChangeNotifierProvider(create: (_) => QiblaProvider()),
         ChangeNotifierProvider(create: (_) => CalendarProvider()),
+        ChangeNotifierProvider(create: (_) => AsmaulHusnaProvider()),
       ],
       child: const MuslimateApp(),
     ),
@@ -83,6 +86,9 @@ class MuslimateApp extends StatelessWidget {
             break;
           case '/calendar':
             page = const CalendarScreen();
+            break;
+          case '/asmaul-husna':
+            page = const AsmaulHusnaScreen();
             break;
           default:
             return null;

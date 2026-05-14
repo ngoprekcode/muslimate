@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/generated/assets/assets.gen.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 
 class HomeQuickActions extends StatelessWidget {
@@ -14,7 +15,7 @@ class HomeQuickActions extends StatelessWidget {
     _QuickAction('hadith', 'Hadist', Icons.format_quote_outlined),
     _QuickAction('schedule', 'Jadwal', Icons.access_time_outlined),
     _QuickAction('mosque', 'Masjid', Icons.mosque_outlined),
-    _QuickAction('asmaul', "Asma", Icons.auto_awesome_outlined),
+    _QuickAction('asmaul', "Asma'ul", Icons.auto_awesome_outlined),
   ];
 
   @override
@@ -67,7 +68,15 @@ class _QuickActionButton extends StatelessWidget {
                 color: c.surfaceAlt,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(action.icon, color: c.gold, size: 20),
+              child: action.id == 'asmaul'
+                  ? Center(
+                      child: AppAssets.icons.icAsma.svg(
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(c.gold, BlendMode.srcIn),
+                      ),
+                    )
+                  : Icon(action.icon, color: c.gold, size: 20),
             ),
             const SizedBox(height: 6),
             Text(
@@ -103,6 +112,9 @@ class _QuickActionButton extends StatelessWidget {
         break;
       case 'schedule':
         Navigator.of(context).pushNamed('/prayer-schedule');
+        break;
+      case 'asmaul':
+        Navigator.of(context).pushNamed('/asmaul-husna');
         break;
     }
   }

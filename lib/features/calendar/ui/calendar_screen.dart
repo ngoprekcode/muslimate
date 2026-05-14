@@ -153,7 +153,7 @@ class CalendarScreen extends StatelessWidget {
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 7,
-                childAspectRatio: isTablet ? 1.5 : 1,
+                childAspectRatio: isTablet ? 1.5 : 0.85,
                 crossAxisSpacing: 2,
                 mainAxisSpacing: 2,
               ),
@@ -176,11 +176,12 @@ class CalendarScreen extends StatelessWidget {
                     opacity: day.isCurrentMonth ? 1.0 : 0.3,
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           '${day.date.day}',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 13,
+                            fontSize: isTablet ? 15 : 13,
                             fontWeight: FontWeight.w700,
                             color: day.isToday
                                 ? Colors.white
@@ -192,16 +193,16 @@ class CalendarScreen extends StatelessWidget {
                         Text(
                           '${day.hijriDate.hDay}',
                           style: GoogleFonts.plusJakartaSans(
-                            fontSize: 9,
+                            fontSize: isTablet ? 11 : 9,
                             fontWeight: FontWeight.w500,
                             color: day.isToday ? c.gold : c.inkMuted,
                           ),
                         ),
                         if (hasHoliday) ...[
-                          const SizedBox(height: 4),
+                          SizedBox(height: isTablet ? 4 : 2),
                           Container(
-                            width: 4,
-                            height: 4,
+                            width: isTablet ? 5 : 4,
+                            height: isTablet ? 5 : 4,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: day.isToday ? Colors.white : c.gold,

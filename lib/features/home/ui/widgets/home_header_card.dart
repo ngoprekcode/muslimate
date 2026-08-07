@@ -2,11 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
-import 'package:muslimate/features/home/data/models/home_prayer_type.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
-import 'package:muslimate/features/calendar/logic/calendar_provider.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
+import 'package:muslimate/shared/models/app_prayer_type.dart';
 import 'package:provider/provider.dart';
 
 import 'home_header_loading.dart';
@@ -67,12 +66,11 @@ class _HomeHeaderCardState extends State<HomeHeaderCard> {
       return HomeHeaderLoading();
     }
 
-    final type = HomePrayerType.fromPrayerType(nextPrayerStr);
+    final type = AppPrayerType.fromPrayerType(nextPrayerStr);
     final nextTime = prayerProvider.getNextPrayerTime();
     final address = prayerProvider.locationName;
 
-    final today = CalendarDay(date: DateTime.now(), isCurrentMonth: true);
-    final hijriDateStr = '${today.hijriDate.hDay} ${_getHijriMonthName(l10n, today.hijriDate.hMonth)} ${today.hijriDate.hYear}';
+    final hijriDateStr = prayerProvider.getHijriDate(l10n, date: DateTime.now());
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -228,23 +226,5 @@ class _HomeHeaderCardState extends State<HomeHeaderCard> {
         ),
       ),
     );
-  }
-
-  String _getHijriMonthName(AppLocalizations l10n, int month) {
-    switch (month) {
-      case 1: return l10n.hijriMonth1;
-      case 2: return l10n.hijriMonth2;
-      case 3: return l10n.hijriMonth3;
-      case 4: return l10n.hijriMonth4;
-      case 5: return l10n.hijriMonth5;
-      case 6: return l10n.hijriMonth6;
-      case 7: return l10n.hijriMonth7;
-      case 8: return l10n.hijriMonth8;
-      case 9: return l10n.hijriMonth9;
-      case 10: return l10n.hijriMonth10;
-      case 11: return l10n.hijriMonth11;
-      case 12: return l10n.hijriMonth12;
-      default: return '';
-    }
   }
 }

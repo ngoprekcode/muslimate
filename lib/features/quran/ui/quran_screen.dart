@@ -29,20 +29,33 @@ class _QuranScreenState extends State<QuranScreen> {
   ];
 
   static const _ayat = [
-    _Ayah(1, 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-        'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.'),
-    _Ayah(2, 'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',
-        'Segala puji bagi Allah, Tuhan semesta alam.'),
+    _Ayah(
+      1,
+      'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+      'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.',
+    ),
+    _Ayah(
+      2,
+      'الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِينَ',
+      'Segala puji bagi Allah, Tuhan semesta alam.',
+    ),
     _Ayah(3, 'الرَّحْمَٰنِ الرَّحِيمِ', 'Yang Maha Pengasih, Maha Penyayang.'),
     _Ayah(4, 'مَالِكِ يَوْمِ الدِّينِ', 'Pemilik hari pembalasan.'),
-    _Ayah(5, 'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
-        'Hanya kepada Engkau kami menyembah dan hanya kepada Engkau kami mohon pertolongan.'),
-    _Ayah(6, 'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ',
-        'Tunjukilah kami jalan yang lurus.'),
     _Ayah(
-        7,
-        'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ',
-        'Yaitu jalan orang-orang yang telah Engkau anugerahkan nikmat kepada mereka.'),
+      5,
+      'إِيَّاكَ نَعْبُدُ وَإِيَّاكَ نَسْتَعِينُ',
+      'Hanya kepada Engkau kami menyembah dan hanya kepada Engkau kami mohon pertolongan.',
+    ),
+    _Ayah(
+      6,
+      'اهْدِنَا الصِّرَاطَ الْمُسْتَقِيمَ',
+      'Tunjukilah kami jalan yang lurus.',
+    ),
+    _Ayah(
+      7,
+      'صِرَاطَ الَّذِينَ أَنْعَمْتَ عَلَيْهِمْ غَيْرِ الْمَغْضُوبِ عَلَيْهِمْ وَلَا الضَّالِّينَ',
+      'Yaitu jalan orang-orang yang telah Engkau anugerahkan nikmat kepada mereka.',
+    ),
   ];
 
   @override
@@ -89,32 +102,37 @@ class _QuranScreenState extends State<QuranScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('TERAKHIR DIBACA',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFFC7D3E0),
-                  letterSpacing: 0.6,
-                )),
+            Text(
+              'TERAKHIR DIBACA',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.dark.inkSoft,
+                letterSpacing: 0.6,
+              ),
+            ),
             const SizedBox(height: 6),
-            Text('Al-Kahf',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                )),
+            Text(
+              'Al-Kahf',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: AppColors.light.surface,
+              ),
+            ),
             const SizedBox(height: 2),
-            Text('Ayat 10 • Juz 15',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  color: c.gold,
-                )),
+            Text(
+              'Ayat 10 • Juz 15',
+              style: GoogleFonts.plusJakartaSans(fontSize: 12, color: c.gold),
+            ),
             const SizedBox(height: 14),
             GestureDetector(
               onTap: () => setState(() => _readerMode = true),
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: c.gold,
                   borderRadius: BorderRadius.circular(999),
@@ -122,12 +140,14 @@ class _QuranScreenState extends State<QuranScreen> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('Lanjutkan membaca',
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w700,
-                          color: c.navy,
-                        )),
+                    Text(
+                      'Lanjutkan membaca',
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w700,
+                        color: c.navy,
+                      ),
+                    ),
                     const SizedBox(width: 6),
                     Icon(Icons.chevron_right_rounded, color: c.navy, size: 14),
                   ],
@@ -154,11 +174,13 @@ class _QuranScreenState extends State<QuranScreen> {
           children: [
             Icon(Icons.search_rounded, color: c.inkMuted, size: 18),
             const SizedBox(width: 10),
-            Text('Cari surat, ayat, atau kata kunci...',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  color: c.inkMuted,
-                )),
+            Text(
+              'Cari surat, ayat, atau kata kunci...',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                color: c.inkMuted,
+              ),
+            ),
           ],
         ),
       ),
@@ -180,12 +202,14 @@ class _QuranScreenState extends State<QuranScreen> {
                 color: active ? c.navy : Colors.transparent,
                 borderRadius: BorderRadius.circular(999),
               ),
-              child: Text(_tabs[i],
-                  style: GoogleFonts.plusJakartaSans(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: active ? Colors.white : c.inkSoft,
-                  )),
+              child: Text(
+                _tabs[i],
+                style: GoogleFonts.plusJakartaSans(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: active ? AppColors.light.surface : c.inkSoft,
+                ),
+              ),
             ),
           );
         }),
@@ -233,12 +257,14 @@ class _QuranScreenState extends State<QuranScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(s.name,
-                            style: GoogleFonts.plusJakartaSans(
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.w700,
-                              color: c.ink,
-                            )),
+                        Text(
+                          s.name,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                            color: c.ink,
+                          ),
+                        ),
                         const SizedBox(height: 2),
                         Text(
                           '${s.meaning} • ${s.ayatCount} ayat • ${s.type}',
@@ -250,12 +276,14 @@ class _QuranScreenState extends State<QuranScreen> {
                       ],
                     ),
                   ),
-                  Text(s.arabic,
-                      style: GoogleFonts.amiri(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: c.gold,
-                      )),
+                  Text(
+                    s.arabic,
+                    style: GoogleFonts.amiri(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: c.gold,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -277,24 +305,32 @@ class _QuranScreenState extends State<QuranScreen> {
               children: [
                 IconButton(
                   onPressed: () => setState(() => _readerMode = false),
-                  icon: Icon(Icons.chevron_left_rounded, color: c.ink, size: 26),
+                  icon: Icon(
+                    Icons.chevron_left_rounded,
+                    color: c.ink,
+                    size: 26,
+                  ),
                 ),
                 const SizedBox(width: 4),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Al-Fatihah',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            color: c.ink,
-                          )),
-                      Text('7 ayat • Makkiyah',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            color: c.inkMuted,
-                          )),
+                      Text(
+                        'Al-Fatihah',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: c.ink,
+                        ),
+                      ),
+                      Text(
+                        '7 ayat • Makkiyah',
+                        style: GoogleFonts.plusJakartaSans(
+                          fontSize: 12,
+                          color: c.inkMuted,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -307,8 +343,11 @@ class _QuranScreenState extends State<QuranScreen> {
                       color: c.surfaceAlt,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child:
-                        Icon(Icons.play_arrow_rounded, color: c.gold, size: 16),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      color: c.gold,
+                      size: 16,
+                    ),
                   ),
                 ),
               ],
@@ -320,7 +359,9 @@ class _QuranScreenState extends State<QuranScreen> {
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          vertical: 20, horizontal: 16),
+                        vertical: 20,
+                        horizontal: 16,
+                      ),
                       decoration: BoxDecoration(
                         color: c.navy,
                         borderRadius: BorderRadius.circular(18),
@@ -338,7 +379,7 @@ class _QuranScreenState extends State<QuranScreen> {
                             'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang',
                             style: GoogleFonts.plusJakartaSans(
                               fontSize: 11,
-                              color: const Color(0xFFC7D3E0),
+                              color: AppColors.dark.inkSoft,
                               fontStyle: FontStyle.italic,
                             ),
                             textAlign: TextAlign.center,
@@ -354,8 +395,9 @@ class _QuranScreenState extends State<QuranScreen> {
                         return Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            border:
-                                Border(bottom: BorderSide(color: c.hairline)),
+                            border: Border(
+                              bottom: BorderSide(color: c.hairline),
+                            ),
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -370,20 +412,28 @@ class _QuranScreenState extends State<QuranScreen> {
                                       color: c.goldSoft,
                                     ),
                                     child: Center(
-                                      child: Text('${a.number}',
-                                          style: GoogleFonts.plusJakartaSans(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            color: c.goldDeep,
-                                          )),
+                                      child: Text(
+                                        '${a.number}',
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                          color: c.goldDeep,
+                                        ),
+                                      ),
                                     ),
                                   ),
                                   const Spacer(),
-                                  Icon(Icons.play_arrow_outlined,
-                                      color: c.inkMuted, size: 20),
+                                  Icon(
+                                    Icons.play_arrow_outlined,
+                                    color: c.inkMuted,
+                                    size: 20,
+                                  ),
                                   const SizedBox(width: 8),
-                                  Icon(Icons.bookmark_outline_rounded,
-                                      color: c.inkMuted, size: 20),
+                                  Icon(
+                                    Icons.bookmark_outline_rounded,
+                                    color: c.inkMuted,
+                                    size: 20,
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 12),
@@ -462,8 +512,14 @@ class _Surat {
   final int ayatCount;
   final String type;
   final String arabic;
-  const _Surat(this.number, this.name, this.meaning, this.ayatCount, this.type,
-      this.arabic);
+  const _Surat(
+    this.number,
+    this.name,
+    this.meaning,
+    this.ayatCount,
+    this.type,
+    this.arabic,
+  );
 }
 
 class _Ayah {

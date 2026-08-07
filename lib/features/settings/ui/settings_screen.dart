@@ -36,21 +36,98 @@ class SettingsScreen extends StatelessWidget {
                   _buildProfileCard(context, c),
                   _buildSection(context, c, 'TAMPILAN', [
                     _buildDarkToggle(context, c, settings),
-                    _buildSettingsRow(context, c, Icons.language_rounded, 'Bahasa', 'Bahasa Indonesia', false),
-                    _buildSettingsRow(context, c, Icons.text_fields_rounded, 'Tipografi Arab', 'Naskh', true),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.language_rounded,
+                      'Bahasa',
+                      'Bahasa Indonesia',
+                      false,
+                    ),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.text_fields_rounded,
+                      'Tipografi Arab',
+                      'Naskh',
+                      true,
+                    ),
                   ]),
                   _buildSection(context, c, 'IBADAH', [
-                    _buildSettingsRow(context, c, Icons.location_on_outlined, 'Lokasi', 'Bandung, ID', false),
-                    _buildSettingsRow(context, c, Icons.notifications_outlined, 'Pengingat shalat', 'Aktif', false),
-                    _buildSettingsRow(context, c, Icons.info_outline_rounded, 'Metode kalkulasi', 'Kemenag', true),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.location_on_outlined,
+                      'Lokasi',
+                      'Bandung, ID',
+                      false,
+                    ),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.notifications_outlined,
+                      'Pengingat shalat',
+                      'Aktif',
+                      false,
+                    ),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.info_outline_rounded,
+                      'Metode kalkulasi',
+                      'Kemenag',
+                      true,
+                    ),
                   ]),
                   _buildSection(context, c, 'LAINNYA', [
-                    _buildSettingsRow(context, c, Icons.message_outlined, 'Kirim masukan', null, false),
-                    _buildSettingsRow(context, c, Icons.favorite_outline_rounded, 'Beri rating', null, false),
-                    _buildSettingsRow(context, c, Icons.share_outlined, 'Bagikan aplikasi', null, false),
-                    _buildSettingsRow(context, c, Icons.star_outline_rounded, 'Ikuti media sosial', null, false),
-                    _buildSettingsRow(context, c, Icons.help_outline_rounded, 'Bantuan', null, false),
-                    _buildSettingsRow(context, c, Icons.lock_outline_rounded, 'Privasi', null, true),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.message_outlined,
+                      'Kirim masukan',
+                      null,
+                      false,
+                    ),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.favorite_outline_rounded,
+                      'Beri rating',
+                      null,
+                      false,
+                    ),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.share_outlined,
+                      'Bagikan aplikasi',
+                      null,
+                      false,
+                    ),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.star_outline_rounded,
+                      'Ikuti media sosial',
+                      null,
+                      false,
+                    ),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.help_outline_rounded,
+                      'Bantuan',
+                      null,
+                      false,
+                    ),
+                    _buildSettingsRow(
+                      context,
+                      c,
+                      Icons.lock_outline_rounded,
+                      'Privasi',
+                      null,
+                      true,
+                    ),
                   ]),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
@@ -102,7 +179,7 @@ class SettingsScreen extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: AppColors.light.surface,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -137,7 +214,12 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSection(BuildContext context, AppColors c, String title, List<Widget> rows) {
+  Widget _buildSection(
+    BuildContext context,
+    AppColors c,
+    String title,
+    List<Widget> rows,
+  ) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
       child: Column(
@@ -169,7 +251,11 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildDarkToggle(BuildContext context, AppColors c, SettingsProvider settings) {
+  Widget _buildDarkToggle(
+    BuildContext context,
+    AppColors c,
+    SettingsProvider settings,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
@@ -185,7 +271,9 @@ class SettingsScreen extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              settings.isDark ? Icons.nights_stay_rounded : Icons.wb_sunny_rounded,
+              settings.isDark
+                  ? Icons.nights_stay_rounded
+                  : Icons.wb_sunny_rounded,
               color: c.gold,
               size: 17,
             ),
@@ -221,7 +309,9 @@ class SettingsScreen extends StatelessWidget {
     return Container(
       decoration: isLast
           ? null
-          : BoxDecoration(border: Border(bottom: BorderSide(color: c.hairline))),
+          : BoxDecoration(
+              border: Border(bottom: BorderSide(color: c.hairline)),
+            ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(

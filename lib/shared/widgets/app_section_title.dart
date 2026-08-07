@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/core/app_theme.dart';
 
 class AppSectionTitle extends StatelessWidget {
   final String title;
@@ -13,17 +12,15 @@ class AppSectionTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
         children: [
           Expanded(
             child: Text(
               title,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
+              style: Theme.of(context).textTheme.bodyMd.copyWith(
                 color: c.ink,
-                letterSpacing: -0.1,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -32,9 +29,7 @@ class AppSectionTitle extends StatelessWidget {
               onTap: onAction,
               child: Text(
                 action!,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                style: Theme.of(context).textTheme.labelMd.copyWith(
                   color: c.gold,
                 ),
               ),

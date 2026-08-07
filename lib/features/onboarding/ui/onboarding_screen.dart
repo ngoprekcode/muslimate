@@ -213,9 +213,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: c.navy,
-                          foregroundColor: Colors.white,
+                          foregroundColor: AppColors.light.surface,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 22, vertical: 14),
+                            horizontal: 22,
+                            vertical: 14,
+                          ),
                           shape: const StadiumBorder(),
                           elevation: 0,
                         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/core/app_theme.dart';
 
 enum AppPillTone { gold, navy, muted }
 
@@ -29,16 +28,17 @@ class AppPill extends StatelessWidget {
         break;
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(999)),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: AppSpacing.xxs,
+      ),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(AppRadius.full),
+      ),
       child: Text(
         text,
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: fg,
-          letterSpacing: 0.2,
-        ),
+        style: Theme.of(context).textTheme.labelMd.copyWith(color: fg),
       ),
     );
   }

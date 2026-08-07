@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
+import 'package:muslimate/core/logic/location_provider.dart';
+import 'package:muslimate/features/location/ui/location_permission_screen.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
 
@@ -15,112 +17,96 @@ class QiblaScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final locationProvider = context.watch<LocationProvider>();
+    final qiblaProvider = context.watch<QiblaProvider>();
+
+    // Gate: Check if location is available
+    if (!locationProvider.hasLocation) {
+      return LocationPermissionScreen(
+        onGranted: (pos) {
+          locationProvider.updatePosition(pos);
+          qiblaProvider.updateLocation(pos.latitude, pos.longitude);
+        },
+      );
+    }
+
+    // Ensure qibla bearing is calculated if we have location but bearing is null
+    if (qiblaProvider.qiblaBearing == null && locationProvider.currentPosition != null) {
+      final pos = locationProvider.currentPosition!;
+      // Schedule the update after build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        qiblaProvider.updateLocation(pos.latitude, pos.longitude);
+      });
+    }
 
     return Scaffold(
       backgroundColor: c.bg,
       body: SafeArea(
-        child: Consumer<QiblaProvider>(
-          builder: (context, provider, child) {
-            if (provider.isLoading) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(l10n.qiblaLoading, style: GoogleFonts.plusJakartaSans(color: c.inkSoft)),
-                  ],
-                ),
-              );
-            }
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final maxWidth = constraints.maxWidth;
+            final isTablet = maxWidth > 600;
+            final compassSize = math.min(maxWidth * 0.7, 400.0);
 
-            if (provider.error != null) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
+            return RefreshIndicator(
+              onRefresh: () async {
+                final pos = await locationProvider.fetchLocation();
+                if (pos != null) {
+                  qiblaProvider.updateLocation(pos.latitude, pos.longitude);
+                }
+              },
+              color: c.gold,
+              backgroundColor: c.surface,
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.error_outline, color: c.gold, size: 48),
-                      const SizedBox(height: 16),
-                      Text(
-                        provider.error!,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.plusJakartaSans(color: c.inkSoft),
+                      AppScreenHeader(
+                        title: l10n.qiblaTitle,
+                        subtitle: l10n.qiblaSubtitle,
                       ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: provider.init,
-                        child: const Text('Retry'),
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+                        child: Row(
+                          children: [
+                            Icon(Icons.location_on_outlined, color: c.gold, size: 14),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                l10n.qiblaLocation(
+                                  locationProvider.address ?? '...',
+                                  qiblaProvider.qiblaBearing?.toStringAsFixed(0) ?? '0',
+                                ),
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 12,
+                                  color: c.inkSoft,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      SizedBox(height: isTablet ? 60 : 40),
+                      _CompassView(
+                        size: compassSize,
+                        heading: qiblaProvider.heading ?? 0,
+                        qiblaBearing: qiblaProvider.qiblaBearing ?? 0,
+                      ),
+                      SizedBox(height: isTablet ? 60 : 40),
+                      _StatusView(
+                        heading: qiblaProvider.heading ?? 0,
+                        qiblaBearing: qiblaProvider.qiblaBearing ?? 0,
+                      ),
+                      const SizedBox(height: 20),
+                      _TipView(),
+                      const SizedBox(height: 40),
                     ],
                   ),
                 ),
-              );
-            }
-
-            return LayoutBuilder(
-              builder: (context, constraints) {
-                final maxWidth = constraints.maxWidth;
-                final isTablet = maxWidth > 600;
-                final compassSize = math.min(maxWidth * 0.7, 400.0);
-
-                return RefreshIndicator(
-                  onRefresh: () => provider.refreshLocation(),
-                  color: c.gold,
-                  backgroundColor: c.surface,
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                      child: Column(
-                        children: [
-                          AppScreenHeader(
-                            title: l10n.qiblaTitle,
-                            subtitle: l10n.qiblaSubtitle,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-                            child: Row(
-                              children: [
-                                Icon(Icons.location_on_outlined, color: c.gold, size: 14),
-                                const SizedBox(width: 6),
-                                Expanded(
-                                  child: Text(
-                                    l10n.qiblaLocation(
-                                      provider.address ?? '...',
-                                      provider.qiblaBearing?.toStringAsFixed(0) ?? '0',
-                                    ),
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 12,
-                                      color: c.inkSoft,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          SizedBox(height: isTablet ? 60 : 40),
-                          _CompassView(
-                            size: compassSize,
-                            heading: provider.heading ?? 0,
-                            qiblaBearing: provider.qiblaBearing ?? 0,
-                          ),
-                          SizedBox(height: isTablet ? 60 : 40),
-                          _StatusView(
-                            heading: provider.heading ?? 0,
-                            qiblaBearing: provider.qiblaBearing ?? 0,
-                          ),
-                          const SizedBox(height: 20),
-                          _TipView(),
-                          const SizedBox(height: 40),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
+              ),
             );
           },
         ),

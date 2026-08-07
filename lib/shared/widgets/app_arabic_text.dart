@@ -15,7 +15,7 @@ class AppArabicText extends StatelessWidget {
     this.fontSize = 22,
     this.color,
     this.textAlign = TextAlign.right,
-    this.height = 2.0,
+    this.height = 2.2,
   });
 
   @override

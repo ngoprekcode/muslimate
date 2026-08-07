@@ -28,9 +28,14 @@ class AppToggle extends StatelessWidget {
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.light.surface,
               borderRadius: BorderRadius.circular(999),
-              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 3)],
+              boxShadow: [
+                BoxShadow(
+                  color: c.navyDeep.withValues(alpha: 0.2),
+                  blurRadius: 3,
+                ),
+              ],
             ),
           ),
         ),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/core/app_theme.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
 
 class AppBottomNavBar extends StatelessWidget {
@@ -32,7 +31,7 @@ class AppBottomNavBar extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
           child: Row(
             children: List.generate(items.length, (i) {
               final active = i == currentIndex;
@@ -50,16 +49,14 @@ class AppBottomNavBar extends StatelessWidget {
                           BlendMode.srcIn,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: AppSpacing.xxs),
                       Text(
                         items[i].label,
-                        style: GoogleFonts.plusJakartaSans(
-                          fontSize: 10.5,
+                        style: Theme.of(context).textTheme.labelMd.copyWith(
                           fontWeight: active
                               ? FontWeight.w600
                               : FontWeight.w500,
                           color: active ? c.gold : c.inkMuted,
-                          letterSpacing: 0.2,
                         ),
                       ),
                     ],

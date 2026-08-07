@@ -8,10 +8,7 @@ import 'package:muslimate/shared/widgets/widgets.dart';
 class HomeHeaderPermission extends StatelessWidget {
   final VoidCallback? onPressed;
 
-  const HomeHeaderPermission({
-    super.key,
-    this.onPressed,
-  });
+  const HomeHeaderPermission({super.key, this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +78,10 @@ class HomeHeaderPermission extends StatelessWidget {
                   children: [
                     AppAssets.icons.icLocation.svg(
                       width: 14,
-                      colorFilter: ColorFilter.mode(c.surface, BlendMode.srcIn),
+                      colorFilter: ColorFilter.mode(
+                        AppColors.light.surface,
+                        BlendMode.srcIn,
+                      ),
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -89,7 +89,7 @@ class HomeHeaderPermission extends StatelessWidget {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: c.surface,
+                        color: AppColors.light.surface,
                       ),
                     ),
                   ],

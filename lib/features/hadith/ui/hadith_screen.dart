@@ -13,7 +13,14 @@ class HadithScreen extends StatefulWidget {
 class _HadithScreenState extends State<HadithScreen> {
   int _activeCategory = 0;
 
-  static const _categories = ['Semua', 'Akhlak', 'Ibadah', 'Keluarga', 'Ilmu', 'Niat'];
+  static const _categories = [
+    'Semua',
+    'Akhlak',
+    'Ibadah',
+    'Keluarga',
+    'Ilmu',
+    'Niat',
+  ];
 
   static const _hadith = [
     _Hadith(
@@ -84,11 +91,13 @@ class _HadithScreenState extends State<HadithScreen> {
           children: [
             Icon(Icons.search_rounded, color: c.inkMuted, size: 18),
             const SizedBox(width: 10),
-            Text('Cari hadist...',
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 13,
-                  color: c.inkMuted,
-                )),
+            Text(
+              'Cari hadist...',
+              style: GoogleFonts.plusJakartaSans(
+                fontSize: 13,
+                color: c.inkMuted,
+              ),
+            ),
           ],
         ),
       ),
@@ -119,7 +128,7 @@ class _HadithScreenState extends State<HadithScreen> {
                 style: GoogleFonts.plusJakartaSans(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  color: active ? Colors.white : c.inkSoft,
+                  color: active ? AppColors.light.surface : c.inkSoft,
                 ),
               ),
             ),
@@ -156,7 +165,7 @@ class _HadithScreenState extends State<HadithScreen> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 14.5,
                 height: 1.55,
-                color: const Color(0xFFF1ECDD),
+                color: AppColors.dark.ink,
               ),
             ),
             const SizedBox(height: 12),
@@ -165,7 +174,7 @@ class _HadithScreenState extends State<HadithScreen> {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFFC7D3E0),
+                color: AppColors.dark.inkSoft,
                 letterSpacing: 0.4,
               ),
             ),

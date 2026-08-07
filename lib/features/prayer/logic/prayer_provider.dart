@@ -1,6 +1,8 @@
 import 'package:prayers_times/prayers_times.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:hijri/hijri_calendar.dart';
+import 'package:muslimate/generated/l10n/app_localizations.dart';
 
 class PrayerProvider extends ChangeNotifier {
   // ... (omitted parts for brevity, but I will provide full replacement)
@@ -68,6 +70,29 @@ class PrayerProvider extends ChangeNotifier {
   String formatTime(DateTime? time) {
     if (time == null) return '--:--';
     return DateFormat('HH:mm').format(time);
+  }
+
+  String getHijriDate(AppLocalizations l10n, {DateTime? date}) {
+    final h = HijriCalendar.fromDate(date ?? _selectedDate);
+    return '${h.hDay} ${getHijriMonthName(l10n, h.hMonth)} ${h.hYear} H';
+  }
+
+  String getHijriMonthName(AppLocalizations l10n, int month) {
+    switch (month) {
+      case 1: return l10n.hijriMonth1;
+      case 2: return l10n.hijriMonth2;
+      case 3: return l10n.hijriMonth3;
+      case 4: return l10n.hijriMonth4;
+      case 5: return l10n.hijriMonth5;
+      case 6: return l10n.hijriMonth6;
+      case 7: return l10n.hijriMonth7;
+      case 8: return l10n.hijriMonth8;
+      case 9: return l10n.hijriMonth9;
+      case 10: return l10n.hijriMonth10;
+      case 11: return l10n.hijriMonth11;
+      case 12: return l10n.hijriMonth12;
+      default: return '';
+    }
   }
 
   /// Mendapatkan prayer yang sedang berlangsung.

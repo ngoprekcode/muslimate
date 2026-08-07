@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:muslimate/features/location/logic/location_permission_provider.dart';
 import 'package:muslimate/features/location/ui/location_permission_screen.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
+import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
 import 'package:muslimate/core/logic/location_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
@@ -18,13 +19,15 @@ class HomeHeader extends StatefulWidget {
 }
 
 class _HomeHeaderState extends State<HomeHeader>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
   late LocationPermissionProvider _locationPermissionProvider;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initLocationListener();
+    _checkInitialLocation();
   }
 
   void _initLocationListener() {
@@ -32,10 +35,29 @@ class _HomeHeaderState extends State<HomeHeader>
     _locationPermissionProvider.addListener(_onPermissionChanged);
   }
 
+  void _checkInitialLocation() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (_locationPermissionProvider.state == LocationPermissionState.granted) {
+        _fetchLocation();
+      }
+    });
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _locationPermissionProvider.removeListener(_onPermissionChanged);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      if (_locationPermissionProvider.state == LocationPermissionState.granted) {
+        _fetchLocation();
+      }
+    }
   }
 
   @override
@@ -51,7 +73,10 @@ class _HomeHeaderState extends State<HomeHeader>
 
   Future<void> _fetchLocation() async {
     final locProvider = context.read<LocationProvider>();
-    if (locProvider.hasLocation) return;
+    
+    // If already has location and not in idle state, we skip redundant fetches.
+    // But if it's idle and permission is granted, we MUST fetch.
+    if (locProvider.hasLocation && locProvider.state != LocationState.idle) return;
 
     final position = await locProvider.fetchLocation();
     if (position != null && mounted) {
@@ -59,6 +84,10 @@ class _HomeHeaderState extends State<HomeHeader>
         position.latitude,
         position.longitude,
         address: locProvider.address,
+      );
+      context.read<QiblaProvider>().updateLocation(
+        position.latitude,
+        position.longitude,
       );
     }
   }
@@ -74,10 +103,10 @@ class _HomeHeaderState extends State<HomeHeader>
     Widget content;
 
     switch (locPermissionState) {
-      case LocationPermissionState.idle:
       case LocationPermissionState.loading:
         content = const HomeHeaderLoading(key: ValueKey('loading'));
         break;
+      case LocationPermissionState.idle:
       case LocationPermissionState.denied:
       case LocationPermissionState.blocked:
         content = const _HomeLocationPermission(key: ValueKey('permission'));
@@ -112,13 +141,17 @@ class _HomeLocationPermission extends StatelessWidget {
           context,
           MaterialPageRoute(
             builder: (context) => LocationPermissionScreen(
-              feature: LocationFeature.jadwal,
               onGranted: (position) {
-                context.read<LocationProvider>().updatePosition(position);
+                final locProvider = context.read<LocationProvider>();
+                locProvider.updatePosition(position);
                 context.read<PrayerProvider>().updateLocation(
                   position.latitude,
                   position.longitude,
-                  address: context.read<LocationProvider>().address,
+                  address: locProvider.address,
+                );
+                context.read<QiblaProvider>().updateLocation(
+                  position.latitude,
+                  position.longitude,
                 );
                 Navigator.pop(context);
               },

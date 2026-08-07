@@ -23,10 +23,16 @@ class _DhikrScreenState extends State<DhikrScreen> {
   ];
 
   static const _doa = [
-    _Doa('Doa sebelum makan', 'اللَّهُمَّ بَارِكْ لَنَا',
-        'Ya Allah, berkahilah kami...'),
-    _Doa('Doa keluar rumah', 'بِسْمِ اللَّهِ تَوَكَّلْتُ',
-        'Dengan nama Allah aku bertawakkal...'),
+    _Doa(
+      'Doa sebelum makan',
+      'اللَّهُمَّ بَارِكْ لَنَا',
+      'Ya Allah, berkahilah kami...',
+    ),
+    _Doa(
+      'Doa keluar rumah',
+      'بِسْمِ اللَّهِ تَوَكَّلْتُ',
+      'Dengan nama Allah aku bertawakkal...',
+    ),
   ];
 
   @override
@@ -83,7 +89,7 @@ class _DhikrScreenState extends State<DhikrScreen> {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFFC7D3E0),
+                          color: AppColors.dark.inkSoft,
                           letterSpacing: 0.6,
                         ),
                       ),
@@ -100,7 +106,7 @@ class _DhikrScreenState extends State<DhikrScreen> {
                         'Subhanallah — Maha Suci Allah',
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 12,
-                          color: const Color(0xFFF1ECDD),
+                          color: AppColors.dark.ink,
                         ),
                       ),
                     ],
@@ -110,23 +116,28 @@ class _DhikrScreenState extends State<DhikrScreen> {
                   onTap: () => setState(() => _count = 0),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 6),
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
+                      color: AppColors.light.surface.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(999),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.refresh_rounded,
-                            color: Colors.white, size: 12),
+                        Icon(
+                          Icons.refresh_rounded,
+                          color: AppColors.light.surface,
+                          size: 12,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'Reset',
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: Colors.white,
+                            color: AppColors.light.surface,
                           ),
                         ),
                       ],
@@ -145,7 +156,13 @@ class _DhikrScreenState extends State<DhikrScreen> {
                 children: [
                   CustomPaint(
                     size: const Size(168, 168),
-                    painter: _RingPainter(pct: pct, trackColor: Colors.white.withOpacity(0.12), fillColor: c.gold),
+                    painter: _RingPainter(
+                      pct: pct,
+                      trackColor: AppColors.light.surface.withValues(
+                        alpha: 0.12,
+                      ),
+                      fillColor: c.gold,
+                    ),
                   ),
                   Column(
                     mainAxisSize: MainAxisSize.min,
@@ -165,7 +182,7 @@ class _DhikrScreenState extends State<DhikrScreen> {
                         style: GoogleFonts.plusJakartaSans(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFFC7D3E0),
+                          color: AppColors.dark.inkSoft,
                         ),
                       ),
                     ],
@@ -314,7 +331,11 @@ class _DhikrScreenState extends State<DhikrScreen> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Icon(Icons.chevron_right_rounded, color: c.inkMuted, size: 18),
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: c.inkMuted,
+                    size: 18,
+                  ),
                 ],
               ),
             );
@@ -329,7 +350,11 @@ class _RingPainter extends CustomPainter {
   final double pct;
   final Color trackColor;
   final Color fillColor;
-  const _RingPainter({required this.pct, required this.trackColor, required this.fillColor});
+  const _RingPainter({
+    required this.pct,
+    required this.trackColor,
+    required this.fillColor,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/core/app_theme.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
 
 /// Reusable card that contains a list of information or trust points.
@@ -16,11 +15,11 @@ class AppInfoListCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(AppSpacing.md),
       width: double.infinity,
       decoration: BoxDecoration(
         color: c.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: c.hairline),
       ),
       child: Column(
@@ -53,19 +52,18 @@ class AppInfoItem extends StatelessWidget {
           Container(
             width: 20,
             height: 20,
-            padding: const EdgeInsets.all(4),
+            padding: const EdgeInsets.all(AppSpacing.xxs),
             decoration: BoxDecoration(
               color: c.goldSoft,
               shape: BoxShape.circle,
             ),
             child: AppAssets.icons.icCheck.svg(),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppSpacing.xs),
           Expanded(
             child: Text(
               text,
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 12,
+              style: Theme.of(context).textTheme.labelMd.copyWith(
                 color: c.inkSoft,
                 fontWeight: FontWeight.w500,
               ),
@@ -76,14 +74,10 @@ class AppInfoItem extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.only(top: AppSpacing.xxs),
       child: Text(
         text,
-        style: GoogleFonts.plusJakartaSans(
-          fontSize: 12,
-          color: c.inkSoft,
-          height: 1.5,
-        ),
+        style: Theme.of(context).textTheme.labelMd.copyWith(color: c.inkSoft),
       ),
     );
   }

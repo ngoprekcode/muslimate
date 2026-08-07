@@ -107,7 +107,9 @@ class PrayerDayItem extends StatelessWidget {
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white.withOpacity(0.8) : c.inkSoft,
+                color: isSelected
+                    ? AppColors.light.surface.withValues(alpha: 0.8)
+                    : c.inkSoft,
               ),
             ),
             const SizedBox(height: 4),

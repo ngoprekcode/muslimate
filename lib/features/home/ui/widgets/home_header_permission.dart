@@ -79,7 +79,7 @@ class HomeHeaderPermission extends StatelessWidget {
                     AppAssets.icons.icLocation.svg(
                       width: 14,
                       colorFilter: ColorFilter.mode(
-                        Colors.white,
+                        AppColors.light.surface,
                         BlendMode.srcIn,
                       ),
                     ),
@@ -89,7 +89,7 @@ class HomeHeaderPermission extends StatelessWidget {
                       style: GoogleFonts.plusJakartaSans(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: AppColors.light.surface,
                       ),
                     ),
                   ],

@@ -149,7 +149,7 @@ class _PrayerItemCard extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
-                      color: isActive ? Colors.white : c.ink,
+                      color: isActive ? AppColors.light.surface : c.ink,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -174,7 +174,7 @@ class _PrayerItemCard extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       color: isActive
-                          ? Colors.white
+                          ? AppColors.light.surface
                           : (isNext ? c.gold : c.inkMuted),
                       fontWeight: isNext ? FontWeight.w600 : FontWeight.normal,
                     ),

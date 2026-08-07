@@ -447,7 +447,7 @@ class _PrimaryButton extends StatelessWidget {
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                      color: AppColors.light.surface,
                     ),
                   ),
                 ],

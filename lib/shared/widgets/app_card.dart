@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/core/app_theme.dart';
 
 class AppCard extends StatelessWidget {
   final Widget child;
@@ -11,7 +11,7 @@ class AppCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding,
-    this.radius = 16,
+    this.radius = AppRadius.lg,
     this.color,
   });
 
@@ -19,7 +19,7 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     return Container(
-      padding: padding ?? const EdgeInsets.all(16),
+      padding: padding ?? const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: color ?? c.surface,
         borderRadius: BorderRadius.circular(radius),

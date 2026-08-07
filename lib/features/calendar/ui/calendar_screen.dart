@@ -187,7 +187,7 @@ class CalendarScreen extends StatelessWidget {
                             fontSize: 13,
                             fontWeight: FontWeight.w700,
                             color: day.isToday
-                                ? Colors.white
+                                ? AppColors.light.surface
                                 : (isFri || isSun || hasHoliday)
                                 ? c.goldDeep
                                 : c.ink,
@@ -208,7 +208,9 @@ class CalendarScreen extends StatelessWidget {
                             height: 4,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: day.isToday ? Colors.white : c.gold,
+                              color: day.isToday
+                                  ? AppColors.light.surface
+                                  : c.gold,
                             ),
                           ),
                         ],

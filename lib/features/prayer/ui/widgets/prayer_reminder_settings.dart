@@ -10,8 +10,10 @@ class PrayerReminderSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final rows = [
-      ('Calculation Method', 'Singapore (MUIS)'),
-      ('Asr Madhab', 'Shafi'),
+      ('Suara Adzan', 'Makkah'),
+      ('Notifikasi sebelum shalat', '10 menit'),
+      ('Metode Kalkulasi', 'Kemenag RI'),
+      ('Madzab Ashar', 'Syafi\'i (Standar)'),
     ];
 
     return Padding(

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:provider/provider.dart';
+// Hidden for SCRUM-5. Restore these imports with the Dark Mode option below.
+// import 'package:provider/provider.dart';
 import 'package:muslimate/core/app_colors.dart';
-import 'package:muslimate/core/logic/settings_provider.dart';
+// import 'package:muslimate/core/logic/settings_provider.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -11,8 +12,8 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
-    final settings = context.watch<SettingsProvider>();
-
+    // Hidden for SCRUM-5. Restore when the Dark Mode option returns to scope.
+    // final settings = context.watch<SettingsProvider>();
     return Scaffold(
       backgroundColor: c.bg,
       body: SafeArea(
@@ -33,25 +34,28 @@ class SettingsScreen extends StatelessWidget {
             Expanded(
               child: ListView(
                 children: [
-                  _buildProfileCard(context, c),
+                  // Hidden for SCRUM-5.
+                  // _buildProfileCard(context, c),
                   _buildSection(context, c, 'TAMPILAN', [
-                    _buildDarkToggle(context, c, settings),
+                    // Hidden for SCRUM-5. Restore these display settings when
+                    // they return to the release scope.
+                    // _buildDarkToggle(context, c, settings),
                     _buildSettingsRow(
                       context,
                       c,
                       Icons.language_rounded,
                       'Bahasa',
                       'Bahasa Indonesia',
-                      false,
-                    ),
-                    _buildSettingsRow(
-                      context,
-                      c,
-                      Icons.text_fields_rounded,
-                      'Tipografi Arab',
-                      'Naskh',
                       true,
                     ),
+                    // _buildSettingsRow(
+                    //   context,
+                    //   c,
+                    //   Icons.text_fields_rounded,
+                    //   'Tipografi Arab',
+                    //   'Naskh',
+                    //   true,
+                    // ),
                   ]),
                   _buildSection(context, c, 'IBADAH', [
                     _buildSettingsRow(
@@ -68,16 +72,18 @@ class SettingsScreen extends StatelessWidget {
                       Icons.notifications_outlined,
                       'Pengingat shalat',
                       'Aktif',
-                      false,
-                    ),
-                    _buildSettingsRow(
-                      context,
-                      c,
-                      Icons.info_outline_rounded,
-                      'Metode kalkulasi',
-                      'Kemenag',
                       true,
                     ),
+                    // Hidden for SCRUM-5. Restore when Calculation Method
+                    // returns to the Settings menu.
+                    // _buildSettingsRow(
+                    //   context,
+                    //   c,
+                    //   Icons.info_outline_rounded,
+                    //   'Metode kalkulasi',
+                    //   'Kemenag',
+                    //   true,
+                    // ),
                   ]),
                   _buildSection(context, c, 'LAINNYA', [
                     _buildSettingsRow(
@@ -214,6 +220,54 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  // Hidden for SCRUM-5. Restore this method with the Dark Mode setting.
+  // Widget _buildDarkToggle(
+  //   BuildContext context,
+  //   AppColors c,
+  //   SettingsProvider settings,
+  // ) {
+  //   return Container(
+  //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+  //     decoration: BoxDecoration(
+  //       border: Border(bottom: BorderSide(color: c.hairline)),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Container(
+  //           width: 32,
+  //           height: 32,
+  //           decoration: BoxDecoration(
+  //             color: c.surfaceAlt,
+  //             borderRadius: BorderRadius.circular(8),
+  //           ),
+  //           child: Icon(
+  //             settings.isDark
+  //                 ? Icons.nights_stay_rounded
+  //                 : Icons.wb_sunny_rounded,
+  //             color: c.gold,
+  //             size: 17,
+  //           ),
+  //         ),
+  //         const SizedBox(width: 12),
+  //         Expanded(
+  //           child: Text(
+  //             'Tema gelap',
+  //             style: GoogleFonts.plusJakartaSans(
+  //               fontSize: 14,
+  //               fontWeight: FontWeight.w500,
+  //               color: c.ink,
+  //             ),
+  //           ),
+  //         ),
+  //         AppToggle(
+  //           value: settings.isDark,
+  //           onChanged: (_) => settings.toggleDark(),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
   Widget _buildSection(
     BuildContext context,
     AppColors c,
@@ -245,53 +299,6 @@ class SettingsScreen extends StatelessWidget {
             ),
             clipBehavior: Clip.hardEdge,
             child: Column(children: rows),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDarkToggle(
-    BuildContext context,
-    AppColors c,
-    SettingsProvider settings,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: c.hairline)),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(
-              color: c.surfaceAlt,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              settings.isDark
-                  ? Icons.nights_stay_rounded
-                  : Icons.wb_sunny_rounded,
-              color: c.gold,
-              size: 17,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              'Tema gelap',
-              style: GoogleFonts.plusJakartaSans(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: c.ink,
-              ),
-            ),
-          ),
-          AppToggle(
-            value: settings.isDark,
-            onChanged: (_) => settings.toggleDark(),
           ),
         ],
       ),

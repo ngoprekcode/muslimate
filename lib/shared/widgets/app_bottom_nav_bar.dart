@@ -19,7 +19,8 @@ class AppBottomNavBar extends StatelessWidget {
       _NavItem(icon: AppAssets.icons.icHome, label: 'Beranda'),
       _NavItem(icon: AppAssets.icons.icPrayer, label: 'Shalat'),
       _NavItem(icon: AppAssets.icons.icQuran, label: "Al-Qur'an"),
-      _NavItem(icon: AppAssets.icons.icWirid, label: 'Wirid'),
+      // Hidden for SCRUM-5. Restore this item with DhikrScreen in MainShell.
+      // _NavItem(icon: AppAssets.icons.icWirid, label: 'Wirid'),
       _NavItem(icon: AppAssets.icons.icSettings, label: 'Lainnya'),
     ];
 

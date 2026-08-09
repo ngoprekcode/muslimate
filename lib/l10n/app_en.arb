@@ -147,5 +147,20 @@
   "prayerTimeNotificationTitle": "Time for {prayer}",
   "@prayerTimeNotificationTitle": {"placeholders": {"prayer": {"type": "String"}}},
   "prayerTimeNotificationBody": "It is time for the {prayer} prayer.",
-  "@prayerTimeNotificationBody": {"placeholders": {"prayer": {"type": "String"}}}
+  "@prayerTimeNotificationBody": {"placeholders": {"prayer": {"type": "String"}}},
+  "prayerScheduleSettingsTitle": "Prayer Schedule Settings",
+  "prayerMadhhabSettingsSubtitle": "Choose the source for calculating Asr time",
+  "prayerReminderSettingsSubtitle": "Set reminders before prayer times",
+  "prayerMadhhabTab": "Madhhab",
+  "prayerReminderTab": "Reminder",
+  "prayerMadhhabInfo": "This selection only affects the calculation of Asr time. The difference is usually 30–60 minutes.",
+  "prayerMadhhabShafiTitle": "Shafi'i, Maliki, Hanbali",
+  "prayerMadhhabShafiDescription": "Used by most Muslims in Indonesia",
+  "prayerMadhhabShafiRule": "Asr begins when an object's shadow equals its length plus the noon shadow.",
+  "prayerMadhhabHanafiDescription": "The madhhab of Imam Abu Hanifa",
+  "prayerMadhhabHanafiRule": "Asr begins when an object's shadow is twice its length plus the noon shadow.",
+  "prayerGlobalReminder": "Global reminder",
+  "prayerReminderExactTime": "At prayer time",
+  "prayerRecommended": "Recommended",
+  "prayerPerPrayerTime": "By prayer time"
 }

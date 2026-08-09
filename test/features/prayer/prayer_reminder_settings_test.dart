@@ -44,13 +44,19 @@ void main() {
 
     await tester.tap(find.text('10 menit'));
     await tester.pumpAndSettle();
+    expect(find.text('Pengingat global'), findsOneWidget);
+    expect(find.text('Adzan'), findsNothing);
     await tester.tap(find.text('15 menit'));
     await tester.pumpAndSettle();
     expect(provider.reminderMinutes, 15);
     expect(scheduler.permissionRequests, 1);
 
+    await tester.tap(find.byIcon(Icons.chevron_left_rounded));
+    await tester.pumpAndSettle();
+
     await tester.tap(find.text("Syafi'i (standar)"));
     await tester.pumpAndSettle();
+    expect(find.text("Syafi'i, Maliki, Hanbali"), findsOneWidget);
     await tester.tap(find.text('Hanafi'));
     await tester.pumpAndSettle();
     expect(provider.asrMadhhab, AsrMadhhab.hanafi);

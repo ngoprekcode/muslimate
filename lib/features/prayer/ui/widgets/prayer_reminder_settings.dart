@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
+import 'package:muslimate/features/prayer/ui/prayer_settings_screen.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
@@ -22,14 +23,14 @@ class PrayerReminderSettings extends StatelessWidget {
       (
         label: l10n.prayerReminderBefore,
         value: l10n.prayerMinutes(provider.reminderMinutes),
-        onTap: () => _showReminderOptions(context),
+        onTap: () => _openSettings(context, PrayerSettingsTab.reminder),
       ),
       (
         label: l10n.prayerAsrMadhhab,
         value: provider.asrMadhhab == AsrMadhhab.shafi
             ? l10n.prayerMadhhabShafi
             : l10n.prayerMadhhabHanafi,
-        onTap: () => _showMadhhabOptions(context),
+        onTap: () => _openSettings(context, PrayerSettingsTab.madhhab),
       ),
     ];
 
@@ -99,61 +100,11 @@ class PrayerReminderSettings extends StatelessWidget {
     );
   }
 
-  Future<void> _showReminderOptions(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final provider = context.read<PrayerProvider>();
-    final selected = await showModalBottomSheet<int>(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            for (final minutes in const [5, 10, 15, 30])
-              ListTile(
-                title: Text(l10n.prayerMinutes(minutes)),
-                trailing: provider.reminderMinutes == minutes
-                    ? const Icon(Icons.check_rounded)
-                    : null,
-                onTap: () => Navigator.pop(sheetContext, minutes),
-              ),
-          ],
-        ),
+  void _openSettings(BuildContext context, PrayerSettingsTab tab) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => PrayerSettingsScreen(initialTab: tab),
       ),
     );
-    if (selected != null && context.mounted) {
-      await provider.setReminderMinutes(selected);
-    }
-  }
-
-  Future<void> _showMadhhabOptions(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
-    final provider = context.read<PrayerProvider>();
-    final selected = await showModalBottomSheet<AsrMadhhab>(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: Text(l10n.prayerMadhhabShafi),
-              trailing: provider.asrMadhhab == AsrMadhhab.shafi
-                  ? const Icon(Icons.check_rounded)
-                  : null,
-              onTap: () => Navigator.pop(sheetContext, AsrMadhhab.shafi),
-            ),
-            ListTile(
-              title: Text(l10n.prayerMadhhabHanafi),
-              trailing: provider.asrMadhhab == AsrMadhhab.hanafi
-                  ? const Icon(Icons.check_rounded)
-                  : null,
-              onTap: () => Navigator.pop(sheetContext, AsrMadhhab.hanafi),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (selected != null && context.mounted) {
-      await provider.setAsrMadhhab(selected);
-    }
   }
 }

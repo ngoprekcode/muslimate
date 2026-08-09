@@ -127,5 +127,20 @@
   "prayerTimeNotificationTitle": "Waktu {prayer}",
   "@prayerTimeNotificationTitle": {"placeholders": {"prayer": {"type": "String"}}},
   "prayerTimeNotificationBody": "Telah masuk waktu shalat {prayer}.",
-  "@prayerTimeNotificationBody": {"placeholders": {"prayer": {"type": "String"}}}
+  "@prayerTimeNotificationBody": {"placeholders": {"prayer": {"type": "String"}}},
+  "prayerScheduleSettingsTitle": "Pengaturan Jadwal",
+  "prayerMadhhabSettingsSubtitle": "Pilih sumber perhitungan waktu Asar",
+  "prayerReminderSettingsSubtitle": "Atur waktu pengingat sebelum shalat",
+  "prayerMadhhabTab": "Mazhab",
+  "prayerReminderTab": "Pengingat",
+  "prayerMadhhabInfo": "Pilihan ini hanya memengaruhi waktu masuk Asar. Selisih biasanya 30–60 menit.",
+  "prayerMadhhabShafiTitle": "Syafi'i, Maliki, Hanbali",
+  "prayerMadhhabShafiDescription": "Mayoritas umat Islam Indonesia",
+  "prayerMadhhabShafiRule": "Asar dimulai ketika bayangan benda sama dengan panjang benda ditambah bayangan saat Zuhur.",
+  "prayerMadhhabHanafiDescription": "Mazhab Imam Abu Hanifah",
+  "prayerMadhhabHanafiRule": "Asar dimulai ketika bayangan benda dua kali panjang benda ditambah bayangan saat Zuhur.",
+  "prayerGlobalReminder": "Pengingat global",
+  "prayerReminderExactTime": "Tepat waktu",
+  "prayerRecommended": "Disarankan",
+  "prayerPerPrayerTime": "Per waktu shalat"
 }

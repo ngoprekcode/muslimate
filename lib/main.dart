@@ -81,6 +81,7 @@ class MuslimateApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      locale: Locale('en'),
       supportedLocales: const [Locale('en'), Locale('id')],
       home: settings.onboardingDone
           ? const MainShell()

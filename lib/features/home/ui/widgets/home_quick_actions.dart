@@ -10,11 +10,12 @@ class HomeQuickActions extends StatelessWidget {
   static const _quickActions = [
     _QuickAction('quran', "Al-Qur'an", Icons.menu_book_outlined),
     _QuickAction('qibla', 'Kiblat', Icons.explore_outlined),
-    _QuickAction('calendar', 'Kalender', Icons.calendar_today_outlined),
-    _QuickAction('dhikr', 'Wirid', Icons.spa_outlined),
-    _QuickAction('hadith', 'Hadist', Icons.format_quote_outlined),
+    // Hidden for SCRUM-5. Restore these actions when they return to scope.
+    // _QuickAction('calendar', 'Kalender', Icons.calendar_today_outlined),
+    // _QuickAction('dhikr', 'Wirid', Icons.spa_outlined),
+    // _QuickAction('hadith', 'Hadist', Icons.format_quote_outlined),
     _QuickAction('schedule', 'Jadwal', Icons.access_time_outlined),
-    _QuickAction('mosque', 'Masjid', Icons.mosque_outlined),
+    // _QuickAction('mosque', 'Masjid', Icons.mosque_outlined),
     _QuickAction('asmaul', "Asma'ul", Icons.auto_awesome_outlined),
   ];
 
@@ -104,12 +105,13 @@ class _QuickActionButton extends StatelessWidget {
       case 'qibla':
         Navigator.of(context).pushNamed('/qibla');
         break;
-      case 'calendar':
-        Navigator.of(context).pushNamed('/calendar');
-        break;
-      case 'hadith':
-        Navigator.of(context).pushNamed('/hadith');
-        break;
+      // Hidden for SCRUM-5. Restore these cases with their quick actions.
+      // case 'calendar':
+      //   Navigator.of(context).pushNamed('/calendar');
+      //   break;
+      // case 'hadith':
+      //   Navigator.of(context).pushNamed('/hadith');
+      //   break;
       case 'schedule':
         Navigator.of(context).pushNamed('/prayer-schedule');
         break;

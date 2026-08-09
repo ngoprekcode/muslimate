@@ -178,5 +178,24 @@
   "notificationPermissionRetry": "Try again"
   ,"notificationPermissionSettings": "Open settings",
   "notificationPermissionSettingsUnavailable": "Settings could not be opened yet. Fully close the app, then open it again.",
-  "prayerLocationRefreshFailed": "Location could not be updated. Please try again."
+  "prayerLocationRefreshFailed": "Location could not be updated. Please try again.",
+  "prayerScheduleTitle": "Prayer Schedule",
+  "prayerLocationSearching": "Finding location...",
+  "prayerHijriDateLabel": "HIJRI DATE",
+  "prayerStatusNow": "Now",
+  "prayerStatusNext": "Next",
+  "prayerStatusPassed": "Passed",
+  "prayerStatusUpcoming": "Upcoming",
+  "prayerStatusHoursRemaining": "{hours} hours remaining",
+  "@prayerStatusHoursRemaining": {"placeholders": {"hours": {"type": "int"}}},
+  "prayerStatusMinutesRemaining": "{minutes} minutes remaining",
+  "@prayerStatusMinutesRemaining": {"placeholders": {"minutes": {"type": "int"}}},
+  "prayerReminderSemanticLabel": "{prayer} reminder",
+  "@prayerReminderSemanticLabel": {"placeholders": {"prayer": {"type": "String"}}},
+  "prayerReminderChannelName": "Prayer reminder",
+  "prayerReminderChannelDescription": "Reminder several minutes before prayer",
+  "prayerAdhanChannelName": "Prayer time adhan",
+  "prayerAdhanChannelDescription": "Adhan when prayer time begins",
+  "prayerWorshipChannelName": "Worship time reminder",
+  "prayerWorshipChannelDescription": "Worship time notification without adhan"
 }

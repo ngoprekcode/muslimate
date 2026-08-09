@@ -31,7 +31,7 @@ class PrayerProvider extends ChangeNotifier {
   Coordinates? _coordinates;
   Coordinates? get coordinates => _coordinates;
 
-  String _locationName = 'Mencari lokasi...';
+  String _locationName = '';
   String get locationName => _locationName;
 
   final params = PrayerCalculationMethod.singapore();

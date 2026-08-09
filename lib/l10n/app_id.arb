@@ -158,5 +158,24 @@
   "notificationPermissionRetry": "Coba lagi"
   ,"notificationPermissionSettings": "Buka pengaturan",
   "notificationPermissionSettingsUnavailable": "Pengaturan belum dapat dibuka. Tutup aplikasi sepenuhnya, lalu buka kembali.",
-  "prayerLocationRefreshFailed": "Lokasi belum dapat diperbarui. Silakan coba lagi."
+  "prayerLocationRefreshFailed": "Lokasi belum dapat diperbarui. Silakan coba lagi.",
+  "prayerScheduleTitle": "Jadwal Shalat",
+  "prayerLocationSearching": "Mencari lokasi...",
+  "prayerHijriDateLabel": "TANGGAL HIJRIAH",
+  "prayerStatusNow": "Sekarang",
+  "prayerStatusNext": "Berikutnya",
+  "prayerStatusPassed": "Sudah lewat",
+  "prayerStatusUpcoming": "Mendatang",
+  "prayerStatusHoursRemaining": "{hours} jam lagi",
+  "@prayerStatusHoursRemaining": {"placeholders": {"hours": {"type": "int"}}},
+  "prayerStatusMinutesRemaining": "{minutes} menit lagi",
+  "@prayerStatusMinutesRemaining": {"placeholders": {"minutes": {"type": "int"}}},
+  "prayerReminderSemanticLabel": "Pengingat {prayer}",
+  "@prayerReminderSemanticLabel": {"placeholders": {"prayer": {"type": "String"}}},
+  "prayerReminderChannelName": "Pengingat sebelum shalat",
+  "prayerReminderChannelDescription": "Pengingat beberapa menit sebelum shalat",
+  "prayerAdhanChannelName": "Adzan waktu shalat",
+  "prayerAdhanChannelDescription": "Adzan ketika waktu shalat tiba",
+  "prayerWorshipChannelName": "Pengingat waktu ibadah",
+  "prayerWorshipChannelDescription": "Notifikasi waktu ibadah tanpa adzan"
 }

@@ -214,11 +214,11 @@ class AndroidPrayerNotificationScheduler
             l10n.prayerReminderNotificationTitle(prayer.name),
             l10n.prayerReminderNotificationBody(reminderMinutes, prayer.name),
             reminderTime,
-            const NotificationDetails(
+            NotificationDetails(
               android: AndroidNotificationDetails(
                 _reminderChannelId,
-                'Pengingat sebelum shalat',
-                channelDescription: 'Pengingat beberapa menit sebelum shalat',
+                l10n.prayerReminderChannelName,
+                channelDescription: l10n.prayerReminderChannelDescription,
                 importance: Importance.high,
                 priority: Priority.high,
               ),
@@ -242,11 +242,11 @@ class AndroidPrayerNotificationScheduler
               android: AndroidNotificationDetails(
                 prayer.type.playsAdhan ? _adhanChannelId : _reminderChannelId,
                 prayer.type.playsAdhan
-                    ? 'Adzan waktu shalat'
-                    : 'Pengingat waktu ibadah',
+                    ? l10n.prayerAdhanChannelName
+                    : l10n.prayerWorshipChannelName,
                 channelDescription: prayer.type.playsAdhan
-                    ? 'Adzan ketika waktu shalat tiba'
-                    : 'Notifikasi waktu ibadah tanpa adzan',
+                    ? l10n.prayerAdhanChannelDescription
+                    : l10n.prayerWorshipChannelDescription,
                 importance: prayer.type.playsAdhan
                     ? Importance.max
                     : Importance.high,

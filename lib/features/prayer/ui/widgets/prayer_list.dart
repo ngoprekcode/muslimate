@@ -7,6 +7,7 @@ import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dar
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/features/notifications/ui/notification_permission_screen.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
+import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
@@ -52,6 +53,7 @@ class _PrayerListState extends State<PrayerList> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PrayerProvider>();
+    final l10n = AppLocalizations.of(context)!;
     final pt = provider.prayerTimes;
     final now = DateTime.now();
 
@@ -59,49 +61,49 @@ class _PrayerListState extends State<PrayerList> {
     final List<_PrayerItemData> items = [
       _PrayerItemData(
         provider.isReminderEnabled(PrayerReminderType.tahajjud),
-        'Tahajjud',
+        l10n.prayerNameTahajjud,
         provider.getTahajjudToday(),
         AppPrayerType.night,
         PrayerReminderType.tahajjud,
       ),
       _PrayerItemData(
         provider.isReminderEnabled(PrayerReminderType.fajr),
-        AppPrayerType.dawn.labelPrayer,
+        l10n.prayerNameFajr,
         pt.fajrStartTime,
         AppPrayerType.dawn,
         PrayerReminderType.fajr,
       ),
       _PrayerItemData(
         provider.isReminderEnabled(PrayerReminderType.sunrise),
-        'Terbit',
+        l10n.prayerNameSunrise,
         pt.sunrise,
         AppPrayerType.dawn,
         PrayerReminderType.sunrise,
       ),
       _PrayerItemData(
         provider.isReminderEnabled(PrayerReminderType.dhuhr),
-        AppPrayerType.noon.labelPrayer,
+        l10n.prayerNameDhuhr,
         pt.dhuhrStartTime,
         AppPrayerType.noon,
         PrayerReminderType.dhuhr,
       ),
       _PrayerItemData(
         provider.isReminderEnabled(PrayerReminderType.asr),
-        AppPrayerType.afternoon.labelPrayer,
+        l10n.prayerNameAsr,
         pt.asrStartTime,
         AppPrayerType.afternoon,
         PrayerReminderType.asr,
       ),
       _PrayerItemData(
         provider.isReminderEnabled(PrayerReminderType.maghrib),
-        AppPrayerType.sunset.labelPrayer,
+        l10n.prayerNameMaghrib,
         pt.maghribStartTime,
         AppPrayerType.sunset,
         PrayerReminderType.maghrib,
       ),
       _PrayerItemData(
         provider.isReminderEnabled(PrayerReminderType.isha),
-        AppPrayerType.night.labelPrayer,
+        l10n.prayerNameIsha,
         pt.ishaStartTime,
         AppPrayerType.night,
         PrayerReminderType.isha,
@@ -132,14 +134,18 @@ class _PrayerListState extends State<PrayerList> {
         children: List.generate(items.length, (i) {
           final p = items[i];
           final pTime = p.time?.toLocal();
+          final isActive = isToday && pTime == absoluteCurrentTime;
+          final isNext = isToday && pTime == absoluteNextTime;
+          final isPast = pTime != null
+              ? pTime.isBefore(absoluteCurrentTime) || isPastDay
+              : true;
           return _PrayerItemCard(
             data: p,
-            isActive: isToday && pTime == absoluteCurrentTime,
-            isNext: isToday && pTime == absoluteNextTime,
-            isPast: pTime != null
-                ? pTime.isBefore(absoluteCurrentTime) || isPastDay
-                : true,
+            isActive: isActive,
+            isNext: isNext,
+            isPast: isPast,
             formattedTime: provider.formatTime(p.time),
+            statusText: _statusText(l10n, p, isActive, isNext, isPast),
             onReminderTap: () async {
               if (!p.isReminder &&
                   !await NotificationPermissionScreen.ensureGranted(context)) {
@@ -152,6 +158,30 @@ class _PrayerListState extends State<PrayerList> {
       ),
     );
   }
+
+  String _statusText(
+    AppLocalizations l10n,
+    _PrayerItemData data,
+    bool isActive,
+    bool isNext,
+    bool isPast,
+  ) {
+    if (isActive) return l10n.prayerStatusNow;
+    if (isNext) {
+      final difference = data.time?.toLocal().difference(DateTime.now());
+      if (difference != null) {
+        if (difference.inHours >= 1) {
+          return l10n.prayerStatusHoursRemaining(difference.inHours);
+        }
+        if (difference.inMinutes > 0) {
+          return l10n.prayerStatusMinutesRemaining(difference.inMinutes);
+        }
+      }
+      return l10n.prayerStatusNext;
+    }
+    if (isPast) return l10n.prayerStatusPassed;
+    return l10n.prayerStatusUpcoming;
+  }
 }
 
 class _PrayerItemCard extends StatelessWidget {
@@ -160,6 +190,7 @@ class _PrayerItemCard extends StatelessWidget {
   final bool isNext;
   final bool isPast;
   final String formattedTime;
+  final String statusText;
   final VoidCallback onReminderTap;
 
   const _PrayerItemCard({
@@ -168,6 +199,7 @@ class _PrayerItemCard extends StatelessWidget {
     required this.isNext,
     required this.isPast,
     required this.formattedTime,
+    required this.statusText,
     required this.onReminderTap,
   });
 
@@ -215,23 +247,7 @@ class _PrayerItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    () {
-                      if (isActive) return 'Sekarang';
-                      if (isNext) {
-                        final now = DateTime.now();
-                        final diff = data.time?.toLocal().difference(now);
-                        if (diff != null) {
-                          if (diff.inHours >= 1) {
-                            return '${diff.inHours} jam lagi';
-                          } else if (diff.inMinutes > 0) {
-                            return '${diff.inMinutes} menit lagi';
-                          }
-                        }
-                        return 'Berikutnya';
-                      }
-                      if (isPast) return 'Sudah lewat';
-                      return 'Mendatang';
-                    }(),
+                    statusText,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       color: isActive
@@ -256,10 +272,14 @@ class _PrayerItemCard extends StatelessWidget {
             Semantics(
               button: true,
               toggled: data.isReminder,
-              label: '${data.name} reminder',
+              label: AppLocalizations.of(
+                context,
+              )!.prayerReminderSemanticLabel(data.name),
               child: IconButton(
                 onPressed: onReminderTap,
-                tooltip: '${data.name} reminder',
+                tooltip: AppLocalizations.of(
+                  context,
+                )!.prayerReminderSemanticLabel(data.name),
                 style: IconButton.styleFrom(
                   backgroundColor: data.isReminder
                       ? c.goldSoft

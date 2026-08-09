@@ -44,7 +44,7 @@ class PrayerHijriCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'TANGGAL HIJRIAH',
+                    l10n.prayerHijriDateLabel,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,

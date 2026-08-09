@@ -103,7 +103,10 @@ class PrayerDayItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              DateFormat('E').format(date),
+              DateFormat(
+                'E',
+                Localizations.localeOf(context).toLanguageTag(),
+              ).format(date),
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,

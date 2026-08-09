@@ -53,6 +53,7 @@ class _PrayerScheduleScreenState extends State<PrayerScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final prayerProvider = context.watch<PrayerProvider>();
 
     if (prayerProvider.coordinates == null) {
@@ -76,10 +77,12 @@ class _PrayerScheduleScreenState extends State<PrayerScheduleScreen> {
         child: Column(
           children: [
             AppScreenHeader(
-              title: 'Jadwal Shalat',
+              title: l10n.prayerScheduleTitle,
               showBackButton: false,
               subtitle: _isRefreshingLocation
                   ? '...'
+                  : prayerProvider.locationName.isEmpty
+                  ? l10n.prayerLocationSearching
                   : prayerProvider.locationName,
               trailing: GestureDetector(
                 onTap: _isRefreshingLocation ? null : _refreshLocation,

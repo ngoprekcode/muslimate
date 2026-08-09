@@ -49,7 +49,7 @@ void main() {
     await tester.pump();
 
     expect(provider.isReminderEnabled(PrayerReminderType.dhuhr), isFalse);
-    await tester.tap(find.byTooltip('Dzuhur reminder'));
+    await tester.tap(find.byTooltip('Pengingat Zuhur'));
     await tester.pump();
 
     expect(provider.isReminderEnabled(PrayerReminderType.dhuhr), isTrue);

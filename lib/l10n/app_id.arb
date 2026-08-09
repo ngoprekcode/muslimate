@@ -157,5 +157,6 @@
   "notificationPermissionAllow": "Izinkan notifikasi",
   "notificationPermissionRetry": "Coba lagi"
   ,"notificationPermissionSettings": "Buka pengaturan",
-  "notificationPermissionSettingsUnavailable": "Pengaturan belum dapat dibuka. Tutup aplikasi sepenuhnya, lalu buka kembali."
+  "notificationPermissionSettingsUnavailable": "Pengaturan belum dapat dibuka. Tutup aplikasi sepenuhnya, lalu buka kembali.",
+  "prayerLocationRefreshFailed": "Lokasi belum dapat diperbarui. Silakan coba lagi."
 }

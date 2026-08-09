@@ -177,5 +177,6 @@
   "notificationPermissionAllow": "Allow notifications",
   "notificationPermissionRetry": "Try again"
   ,"notificationPermissionSettings": "Open settings",
-  "notificationPermissionSettingsUnavailable": "Settings could not be opened yet. Fully close the app, then open it again."
+  "notificationPermissionSettingsUnavailable": "Settings could not be opened yet. Fully close the app, then open it again.",
+  "prayerLocationRefreshFailed": "Location could not be updated. Please try again."
 }

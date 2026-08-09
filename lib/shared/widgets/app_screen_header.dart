@@ -5,12 +5,14 @@ class AppScreenHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
   final Widget? trailing;
+  final bool showBackButton;
 
   const AppScreenHeader({
     super.key,
     required this.title,
     this.subtitle,
     this.trailing,
+    this.showBackButton = true,
   });
 
   @override
@@ -20,11 +22,13 @@ class AppScreenHeader extends StatelessWidget {
       padding: const EdgeInsets.all(AppSpacing.md),
       child: Row(
         children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Icon(Icons.chevron_left_rounded, color: c.ink, size: 26),
-          ),
-          const SizedBox(width: AppSpacing.sm),
+          if (showBackButton) ...[
+            GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Icon(Icons.chevron_left_rounded, color: c.ink, size: 26),
+            ),
+            const SizedBox(width: AppSpacing.sm),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,11 +44,10 @@ class AppScreenHeader extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
 
-                    style: Theme.of(context).textTheme.labelMd.copyWith(
-                      color: c.inkMuted,
-                    ),
+                    style: Theme.of(
+                      context,
+                    ).textTheme.labelMd.copyWith(color: c.inkMuted),
                   ),
-
                 ],
               ],
             ),

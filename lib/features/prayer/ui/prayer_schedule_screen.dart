@@ -77,6 +77,7 @@ class _PrayerScheduleScreenState extends State<PrayerScheduleScreen> {
           children: [
             AppScreenHeader(
               title: 'Jadwal Shalat',
+              showBackButton: false,
               subtitle: _isRefreshingLocation
                   ? '...'
                   : prayerProvider.locationName,

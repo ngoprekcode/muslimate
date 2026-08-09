@@ -1,11 +1,24 @@
 import 'package:prayers_times/prayers_times.dart';
 import 'package:flutter/material.dart';
+import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dart';
 import 'package:intl/intl.dart';
 import 'package:hijri/hijri_calendar.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+enum AsrMadhhab { shafi, hanafi }
 
 class PrayerProvider extends ChangeNotifier {
-  // ... (omitted parts for brevity, but I will provide full replacement)
+  static const _reminderMinutesKey = 'prayer_reminder_minutes';
+  static const _asrMadhhabKey = 'prayer_asr_madhhab';
+  static const _latitudeKey = 'prayer_last_latitude';
+  static const _longitudeKey = 'prayer_last_longitude';
+  static const _enabledRemindersKey = 'prayer_enabled_reminders';
+  static const _defaultEnabledReminders = {
+    PrayerReminderType.fajr,
+    PrayerReminderType.maghrib,
+  };
+
   PrayerTimes? _prayerTimes;
   PrayerTimes? get prayerTimes => _prayerTimes;
 
@@ -18,13 +31,104 @@ class PrayerProvider extends ChangeNotifier {
   Coordinates? _coordinates;
   Coordinates? get coordinates => _coordinates;
 
-  String _locationName = 'Mencari lokasi...';
+  String _locationName = '';
   String get locationName => _locationName;
 
   final params = PrayerCalculationMethod.singapore();
 
-  PrayerProvider() {
+  int _reminderMinutes = 10;
+  int get reminderMinutes => _reminderMinutes;
+
+  AsrMadhhab _asrMadhhab = AsrMadhhab.shafi;
+  AsrMadhhab get asrMadhhab => _asrMadhhab;
+
+  Set<PrayerReminderType> _enabledReminders = {..._defaultEnabledReminders};
+  bool isReminderEnabled(PrayerReminderType type) =>
+      _enabledReminders.contains(type);
+
+  bool _disposed = false;
+  final PrayerNotificationScheduler _notificationScheduler;
+
+  PrayerProvider({PrayerNotificationScheduler? notificationScheduler})
+    : _notificationScheduler =
+          notificationScheduler ?? const NoopPrayerNotificationScheduler() {
     params.madhab = PrayerMadhab.shafi;
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_disposed) return;
+    _reminderMinutes = prefs.getInt(_reminderMinutesKey) ?? 10;
+    final storedReminders = prefs.getStringList(_enabledRemindersKey);
+    if (storedReminders != null) {
+      _enabledReminders = PrayerReminderType.values
+          .where((type) => storedReminders.contains(type.name))
+          .toSet();
+    }
+    final latitude = prefs.getDouble(_latitudeKey);
+    final longitude = prefs.getDouble(_longitudeKey);
+    if (latitude != null &&
+        longitude != null &&
+        latitude >= -90 &&
+        latitude <= 90 &&
+        longitude >= -180 &&
+        longitude <= 180) {
+      _coordinates = Coordinates(latitude, longitude);
+    }
+    final storedMadhhab = prefs.getString(_asrMadhhabKey);
+    _asrMadhhab = storedMadhhab == AsrMadhhab.hanafi.name
+        ? AsrMadhhab.hanafi
+        : AsrMadhhab.shafi;
+    params.madhab = _prayerMadhabFor(_asrMadhhab);
+    _calculatePrayerTimes();
+    await _schedulePrayerNotifications();
+    if (!_disposed) notifyListeners();
+  }
+
+  Future<void> setReminderMinutes(int minutes) async {
+    if (_reminderMinutes == minutes) {
+      await _schedulePrayerNotifications();
+      return;
+    }
+    _reminderMinutes = minutes;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_reminderMinutesKey, minutes);
+    await _schedulePrayerNotifications();
+  }
+
+  Future<void> setAsrMadhhab(AsrMadhhab madhhab) async {
+    if (_asrMadhhab == madhhab) return;
+    _asrMadhhab = madhhab;
+    params.madhab = _prayerMadhabFor(madhhab);
+    _calculatePrayerTimes();
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_asrMadhhabKey, madhhab.name);
+    await _schedulePrayerNotifications();
+  }
+
+  Future<void> toggleReminder(PrayerReminderType type) async {
+    final enabled = _enabledReminders.contains(type);
+    if (enabled) {
+      _enabledReminders.remove(type);
+    } else {
+      _enabledReminders.add(type);
+    }
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _enabledRemindersKey,
+      _enabledReminders.map((type) => type.name).toList()..sort(),
+    );
+    await _schedulePrayerNotifications();
+  }
+
+  String _prayerMadhabFor(AsrMadhhab madhhab) {
+    return madhhab == AsrMadhhab.hanafi
+        ? PrayerMadhab.hanafi
+        : PrayerMadhab.shafi;
   }
 
   Future<void> updateLocation(double lat, double lng, {String? address}) async {
@@ -32,7 +136,23 @@ class PrayerProvider extends ChangeNotifier {
     if (address != null) {
       _locationName = address;
     }
+    final prefs = await SharedPreferences.getInstance();
+    await Future.wait([
+      prefs.setDouble(_latitudeKey, lat),
+      prefs.setDouble(_longitudeKey, lng),
+    ]);
     _calculatePrayerTimes();
+    await _schedulePrayerNotifications();
+  }
+
+  Future<void> _schedulePrayerNotifications() async {
+    if (_coordinates == null || _disposed) return;
+    await _notificationScheduler.schedulePrayerNotifications(
+      coordinates: _coordinates!,
+      calculationParameters: params,
+      reminderMinutes: _reminderMinutes,
+      enabledReminders: _enabledReminders,
+    );
   }
 
   void updateDate(DateTime date) {
@@ -50,6 +170,12 @@ class PrayerProvider extends ChangeNotifier {
     );
     _sunnahTimes = SunnahInsights(_prayerTimes!);
     notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 
   DateTime? getTahajjudToday() {
@@ -79,19 +205,32 @@ class PrayerProvider extends ChangeNotifier {
 
   String getHijriMonthName(AppLocalizations l10n, int month) {
     switch (month) {
-      case 1: return l10n.hijriMonth1;
-      case 2: return l10n.hijriMonth2;
-      case 3: return l10n.hijriMonth3;
-      case 4: return l10n.hijriMonth4;
-      case 5: return l10n.hijriMonth5;
-      case 6: return l10n.hijriMonth6;
-      case 7: return l10n.hijriMonth7;
-      case 8: return l10n.hijriMonth8;
-      case 9: return l10n.hijriMonth9;
-      case 10: return l10n.hijriMonth10;
-      case 11: return l10n.hijriMonth11;
-      case 12: return l10n.hijriMonth12;
-      default: return '';
+      case 1:
+        return l10n.hijriMonth1;
+      case 2:
+        return l10n.hijriMonth2;
+      case 3:
+        return l10n.hijriMonth3;
+      case 4:
+        return l10n.hijriMonth4;
+      case 5:
+        return l10n.hijriMonth5;
+      case 6:
+        return l10n.hijriMonth6;
+      case 7:
+        return l10n.hijriMonth7;
+      case 8:
+        return l10n.hijriMonth8;
+      case 9:
+        return l10n.hijriMonth9;
+      case 10:
+        return l10n.hijriMonth10;
+      case 11:
+        return l10n.hijriMonth11;
+      case 12:
+        return l10n.hijriMonth12;
+      default:
+        return '';
     }
   }
 
@@ -117,8 +256,9 @@ class PrayerProvider extends ChangeNotifier {
     if (now.isBefore(_prayerTimes!.fajrStartTime!)) return PrayerType.fajr;
     if (now.isBefore(_prayerTimes!.dhuhrStartTime!)) return PrayerType.dhuhr;
     if (now.isBefore(_prayerTimes!.asrStartTime!)) return PrayerType.asr;
-    if (now.isBefore(_prayerTimes!.maghribStartTime!))
+    if (now.isBefore(_prayerTimes!.maghribStartTime!)) {
       return PrayerType.maghrib;
+    }
     if (now.isBefore(_prayerTimes!.ishaStartTime!)) return PrayerType.isha;
 
     return PrayerType.fajr;

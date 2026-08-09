@@ -1,58 +1,112 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
+import 'package:muslimate/features/notifications/ui/notification_permission_screen.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
+import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-class PrayerList extends StatelessWidget {
+class PrayerList extends StatefulWidget {
   const PrayerList({super.key});
+
+  @override
+  State<PrayerList> createState() => _PrayerListState();
+}
+
+class _PrayerListState extends State<PrayerList> {
+  Timer? _clockTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleNextMinuteTick();
+  }
+
+  void _scheduleNextMinuteTick() {
+    _clockTimer?.cancel();
+    final now = DateTime.now();
+    final nextMinute = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute + 1,
+    );
+    _clockTimer = Timer(nextMinute.difference(now), () {
+      if (!mounted) return;
+      setState(() {});
+      _scheduleNextMinuteTick();
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<PrayerProvider>();
+    final l10n = AppLocalizations.of(context)!;
     final pt = provider.prayerTimes;
     final now = DateTime.now();
 
     if (pt == null) return const SizedBox.shrink();
     final List<_PrayerItemData> items = [
       _PrayerItemData(
-        false,
-        'Tahajjud',
+        provider.isReminderEnabled(PrayerReminderType.tahajjud),
+        l10n.prayerNameTahajjud,
         provider.getTahajjudToday(),
         AppPrayerType.night,
+        PrayerReminderType.tahajjud,
       ),
       _PrayerItemData(
-        true,
-        AppPrayerType.dawn.labelPrayer,
+        provider.isReminderEnabled(PrayerReminderType.fajr),
+        l10n.prayerNameFajr,
         pt.fajrStartTime,
         AppPrayerType.dawn,
+        PrayerReminderType.fajr,
       ),
-      _PrayerItemData(false, 'Terbit', pt.sunrise, AppPrayerType.dawn),
       _PrayerItemData(
-        false,
-        AppPrayerType.noon.labelPrayer,
+        provider.isReminderEnabled(PrayerReminderType.sunrise),
+        l10n.prayerNameSunrise,
+        pt.sunrise,
+        AppPrayerType.dawn,
+        PrayerReminderType.sunrise,
+      ),
+      _PrayerItemData(
+        provider.isReminderEnabled(PrayerReminderType.dhuhr),
+        l10n.prayerNameDhuhr,
         pt.dhuhrStartTime,
         AppPrayerType.noon,
+        PrayerReminderType.dhuhr,
       ),
       _PrayerItemData(
-        false,
-        AppPrayerType.afternoon.labelPrayer,
+        provider.isReminderEnabled(PrayerReminderType.asr),
+        l10n.prayerNameAsr,
         pt.asrStartTime,
         AppPrayerType.afternoon,
+        PrayerReminderType.asr,
       ),
       _PrayerItemData(
-        true,
-        AppPrayerType.sunset.labelPrayer,
+        provider.isReminderEnabled(PrayerReminderType.maghrib),
+        l10n.prayerNameMaghrib,
         pt.maghribStartTime,
         AppPrayerType.sunset,
+        PrayerReminderType.maghrib,
       ),
       _PrayerItemData(
-        false,
-        AppPrayerType.night.labelPrayer,
+        provider.isReminderEnabled(PrayerReminderType.isha),
+        l10n.prayerNameIsha,
         pt.ishaStartTime,
         AppPrayerType.night,
+        PrayerReminderType.isha,
       ),
     ];
 
@@ -80,18 +134,53 @@ class PrayerList extends StatelessWidget {
         children: List.generate(items.length, (i) {
           final p = items[i];
           final pTime = p.time?.toLocal();
+          final isActive = isToday && pTime == absoluteCurrentTime;
+          final isNext = isToday && pTime == absoluteNextTime;
+          final isPast = pTime != null
+              ? pTime.isBefore(absoluteCurrentTime) || isPastDay
+              : true;
           return _PrayerItemCard(
             data: p,
-            isActive: isToday && pTime == absoluteCurrentTime,
-            isNext: isToday && pTime == absoluteNextTime,
-            isPast: pTime != null
-                ? pTime.isBefore(absoluteCurrentTime) || isPastDay
-                : true,
+            isActive: isActive,
+            isNext: isNext,
+            isPast: isPast,
             formattedTime: provider.formatTime(p.time),
+            statusText: _statusText(l10n, p, isActive, isNext, isPast),
+            onReminderTap: () async {
+              if (!p.isReminder &&
+                  !await NotificationPermissionScreen.ensureGranted(context)) {
+                return;
+              }
+              await provider.toggleReminder(p.reminderType);
+            },
           );
         }),
       ),
     );
+  }
+
+  String _statusText(
+    AppLocalizations l10n,
+    _PrayerItemData data,
+    bool isActive,
+    bool isNext,
+    bool isPast,
+  ) {
+    if (isActive) return l10n.prayerStatusNow;
+    if (isNext) {
+      final difference = data.time?.toLocal().difference(DateTime.now());
+      if (difference != null) {
+        if (difference.inHours >= 1) {
+          return l10n.prayerStatusHoursRemaining(difference.inHours);
+        }
+        if (difference.inMinutes > 0) {
+          return l10n.prayerStatusMinutesRemaining(difference.inMinutes);
+        }
+      }
+      return l10n.prayerStatusNext;
+    }
+    if (isPast) return l10n.prayerStatusPassed;
+    return l10n.prayerStatusUpcoming;
   }
 }
 
@@ -101,6 +190,8 @@ class _PrayerItemCard extends StatelessWidget {
   final bool isNext;
   final bool isPast;
   final String formattedTime;
+  final String statusText;
+  final VoidCallback onReminderTap;
 
   const _PrayerItemCard({
     required this.data,
@@ -108,6 +199,8 @@ class _PrayerItemCard extends StatelessWidget {
     required this.isNext,
     required this.isPast,
     required this.formattedTime,
+    required this.statusText,
+    required this.onReminderTap,
   });
 
   @override
@@ -154,23 +247,7 @@ class _PrayerItemCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    () {
-                      if (isActive) return 'Sekarang';
-                      if (isNext) {
-                        final now = DateTime.now();
-                        final diff = data.time?.toLocal().difference(now);
-                        if (diff != null) {
-                          if (diff.inHours >= 1) {
-                            return '${diff.inHours} jam lagi';
-                          } else if (diff.inMinutes > 0) {
-                            return '${diff.inMinutes} menit lagi';
-                          }
-                        }
-                        return 'Berikutnya';
-                      }
-                      if (isPast) return 'Sudah lewat';
-                      return 'Mendatang';
-                    }(),
+                    statusText,
                     style: GoogleFonts.plusJakartaSans(
                       fontSize: 11,
                       color: isActive
@@ -192,16 +269,27 @@ class _PrayerItemCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: data.isReminder ? c.goldSoft : Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: c.goldSoft),
-              ),
-              child: Center(
-                child: AppAssets.icons.icNotification.svg(
+            Semantics(
+              button: true,
+              toggled: data.isReminder,
+              label: AppLocalizations.of(
+                context,
+              )!.prayerReminderSemanticLabel(data.name),
+              child: IconButton(
+                onPressed: onReminderTap,
+                tooltip: AppLocalizations.of(
+                  context,
+                )!.prayerReminderSemanticLabel(data.name),
+                style: IconButton.styleFrom(
+                  backgroundColor: data.isReminder
+                      ? c.goldSoft
+                      : Colors.transparent,
+                  side: BorderSide(color: c.goldSoft),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: AppAssets.icons.icNotification.svg(
                   width: 15,
                   colorFilter: ColorFilter.mode(
                     data.isReminder ? c.goldDeep : c.inkMuted,
@@ -222,5 +310,12 @@ class _PrayerItemData {
   final String name;
   final DateTime? time;
   final AppPrayerType type;
-  _PrayerItemData(this.isReminder, this.name, this.time, this.type);
+  final PrayerReminderType reminderType;
+  _PrayerItemData(
+    this.isReminder,
+    this.name,
+    this.time,
+    this.type,
+    this.reminderType,
+  );
 }

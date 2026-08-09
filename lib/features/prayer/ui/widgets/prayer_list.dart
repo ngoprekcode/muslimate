@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
@@ -7,8 +9,44 @@ import 'package:muslimate/generated/assets/assets.gen.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-class PrayerList extends StatelessWidget {
+class PrayerList extends StatefulWidget {
   const PrayerList({super.key});
+
+  @override
+  State<PrayerList> createState() => _PrayerListState();
+}
+
+class _PrayerListState extends State<PrayerList> {
+  Timer? _clockTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleNextMinuteTick();
+  }
+
+  void _scheduleNextMinuteTick() {
+    _clockTimer?.cancel();
+    final now = DateTime.now();
+    final nextMinute = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      now.hour,
+      now.minute + 1,
+    );
+    _clockTimer = Timer(nextMinute.difference(now), () {
+      if (!mounted) return;
+      setState(() {});
+      _scheduleNextMinuteTick();
+    });
+  }
+
+  @override
+  void dispose() {
+    _clockTimer?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

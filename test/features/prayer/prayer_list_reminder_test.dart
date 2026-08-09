@@ -48,6 +48,11 @@ void main() {
 
     expect(provider.isReminderEnabled(PrayerReminderType.dhuhr), isTrue);
     expect(scheduler.lastEnabledReminders, contains(PrayerReminderType.dhuhr));
+
+    await tester.pump(const Duration(minutes: 1));
+    expect(find.byType(PrayerList), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
   });
 }
 

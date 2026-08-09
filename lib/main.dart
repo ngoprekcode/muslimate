@@ -19,6 +19,7 @@ import 'package:muslimate/features/settings/ui/settings_screen.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
+import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dart';
 import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
 import 'package:muslimate/features/location/logic/location_permission_provider.dart';
 import 'package:muslimate/core/logic/location_provider.dart';
@@ -29,6 +30,8 @@ import 'package:muslimate/features/asmaulhusna/ui/asmaulhusna_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  final prayerNotificationScheduler = AndroidPrayerNotificationScheduler();
+  await prayerNotificationScheduler.initialize();
   runApp(
     MultiProvider(
       providers: [
@@ -39,7 +42,11 @@ void main() async {
           create: (_) => LocationPermissionProvider()..checkPermissionStatus(),
         ),
 
-        ChangeNotifierProvider(create: (_) => PrayerProvider()),
+        ChangeNotifierProvider(
+          create: (_) => PrayerProvider(
+            notificationScheduler: prayerNotificationScheduler,
+          ),
+        ),
         ChangeNotifierProvider(create: (_) => QiblaProvider()),
         ChangeNotifierProvider(create: (_) => CalendarProvider()),
         ChangeNotifierProvider(create: (_) => AsmaulHusnaProvider()),

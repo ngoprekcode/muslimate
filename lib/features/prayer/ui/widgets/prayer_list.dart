@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
+import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
@@ -18,41 +19,53 @@ class PrayerList extends StatelessWidget {
     if (pt == null) return const SizedBox.shrink();
     final List<_PrayerItemData> items = [
       _PrayerItemData(
-        false,
+        provider.isReminderEnabled(PrayerReminderType.tahajjud),
         'Tahajjud',
         provider.getTahajjudToday(),
         AppPrayerType.night,
+        PrayerReminderType.tahajjud,
       ),
       _PrayerItemData(
-        true,
+        provider.isReminderEnabled(PrayerReminderType.fajr),
         AppPrayerType.dawn.labelPrayer,
         pt.fajrStartTime,
         AppPrayerType.dawn,
+        PrayerReminderType.fajr,
       ),
-      _PrayerItemData(false, 'Terbit', pt.sunrise, AppPrayerType.dawn),
       _PrayerItemData(
-        false,
+        provider.isReminderEnabled(PrayerReminderType.sunrise),
+        'Terbit',
+        pt.sunrise,
+        AppPrayerType.dawn,
+        PrayerReminderType.sunrise,
+      ),
+      _PrayerItemData(
+        provider.isReminderEnabled(PrayerReminderType.dhuhr),
         AppPrayerType.noon.labelPrayer,
         pt.dhuhrStartTime,
         AppPrayerType.noon,
+        PrayerReminderType.dhuhr,
       ),
       _PrayerItemData(
-        false,
+        provider.isReminderEnabled(PrayerReminderType.asr),
         AppPrayerType.afternoon.labelPrayer,
         pt.asrStartTime,
         AppPrayerType.afternoon,
+        PrayerReminderType.asr,
       ),
       _PrayerItemData(
-        true,
+        provider.isReminderEnabled(PrayerReminderType.maghrib),
         AppPrayerType.sunset.labelPrayer,
         pt.maghribStartTime,
         AppPrayerType.sunset,
+        PrayerReminderType.maghrib,
       ),
       _PrayerItemData(
-        false,
+        provider.isReminderEnabled(PrayerReminderType.isha),
         AppPrayerType.night.labelPrayer,
         pt.ishaStartTime,
         AppPrayerType.night,
+        PrayerReminderType.isha,
       ),
     ];
 
@@ -88,6 +101,7 @@ class PrayerList extends StatelessWidget {
                 ? pTime.isBefore(absoluteCurrentTime) || isPastDay
                 : true,
             formattedTime: provider.formatTime(p.time),
+            onReminderTap: () => provider.toggleReminder(p.reminderType),
           );
         }),
       ),
@@ -101,6 +115,7 @@ class _PrayerItemCard extends StatelessWidget {
   final bool isNext;
   final bool isPast;
   final String formattedTime;
+  final VoidCallback onReminderTap;
 
   const _PrayerItemCard({
     required this.data,
@@ -108,6 +123,7 @@ class _PrayerItemCard extends StatelessWidget {
     required this.isNext,
     required this.isPast,
     required this.formattedTime,
+    required this.onReminderTap,
   });
 
   @override
@@ -192,16 +208,23 @@ class _PrayerItemCard extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: data.isReminder ? c.goldSoft : Colors.transparent,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: c.goldSoft),
-              ),
-              child: Center(
-                child: AppAssets.icons.icNotification.svg(
+            Semantics(
+              button: true,
+              toggled: data.isReminder,
+              label: '${data.name} reminder',
+              child: IconButton(
+                onPressed: onReminderTap,
+                tooltip: '${data.name} reminder',
+                style: IconButton.styleFrom(
+                  backgroundColor: data.isReminder
+                      ? c.goldSoft
+                      : Colors.transparent,
+                  side: BorderSide(color: c.goldSoft),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                icon: AppAssets.icons.icNotification.svg(
                   width: 15,
                   colorFilter: ColorFilter.mode(
                     data.isReminder ? c.goldDeep : c.inkMuted,
@@ -222,5 +245,12 @@ class _PrayerItemData {
   final String name;
   final DateTime? time;
   final AppPrayerType type;
-  _PrayerItemData(this.isReminder, this.name, this.time, this.type);
+  final PrayerReminderType reminderType;
+  _PrayerItemData(
+    this.isReminder,
+    this.name,
+    this.time,
+    this.type,
+    this.reminderType,
+  );
 }

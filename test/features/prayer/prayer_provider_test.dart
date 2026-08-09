@@ -58,7 +58,7 @@ void main() {
       expect(provider.prayerTimes, same(prayerTimes));
       expect(provider.asrMadhhab, AsrMadhhab.shafi);
       expect(provider.reminderMinutes, 30);
-      expect(scheduler.permissionRequests, 2);
+      expect(scheduler.permissionRequests, 0);
       expect(scheduler.scheduleRequests, greaterThan(0));
       expect(
         scheduler.lastEnabledReminders,
@@ -79,9 +79,16 @@ class _FakePrayerNotificationScheduler implements PrayerNotificationScheduler {
   Set<PrayerReminderType> lastEnabledReminders = {};
 
   @override
-  Future<void> requestPermissions() async {
+  Future<bool> areNotificationsEnabled() async => true;
+
+  @override
+  Future<bool> requestNotificationPermission() async {
     permissionRequests++;
+    return true;
   }
+
+  @override
+  Future<bool> openNotificationSettings() async => true;
 
   @override
   Future<void> schedulePrayerNotifications({

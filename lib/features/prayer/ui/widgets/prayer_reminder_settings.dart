@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
+import 'package:muslimate/features/notifications/ui/notification_permission_screen.dart';
 import 'package:muslimate/features/prayer/ui/prayer_settings_screen.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
@@ -23,7 +24,7 @@ class PrayerReminderSettings extends StatelessWidget {
       (
         label: l10n.prayerReminderBefore,
         value: l10n.prayerMinutes(provider.reminderMinutes),
-        onTap: () => _openSettings(context, PrayerSettingsTab.reminder),
+        onTap: () => _openReminderSettings(context),
       ),
       (
         label: l10n.prayerAsrMadhhab,
@@ -106,5 +107,13 @@ class PrayerReminderSettings extends StatelessWidget {
         builder: (_) => PrayerSettingsScreen(initialTab: tab),
       ),
     );
+  }
+
+  Future<void> _openReminderSettings(BuildContext context) async {
+    if (!await NotificationPermissionScreen.ensureGranted(context) ||
+        !context.mounted) {
+      return;
+    }
+    _openSettings(context, PrayerSettingsTab.reminder);
   }
 }

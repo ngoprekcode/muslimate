@@ -22,6 +22,7 @@ import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dart';
 import 'package:muslimate/features/qibla/logic/qibla_provider.dart';
 import 'package:muslimate/features/location/logic/location_permission_provider.dart';
+import 'package:muslimate/features/notifications/logic/notification_permission_provider.dart';
 import 'package:muslimate/core/logic/location_provider.dart';
 
 import 'package:muslimate/features/calendar/logic/calendar_provider.dart';
@@ -40,6 +41,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => LocationProvider()),
         ChangeNotifierProvider(
           create: (_) => LocationPermissionProvider()..checkPermissionStatus(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) =>
+              NotificationPermissionProvider(prayerNotificationScheduler)
+                ..checkPermissionStatus(),
         ),
 
         ChangeNotifierProvider(

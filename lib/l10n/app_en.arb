@@ -162,5 +162,20 @@
   "prayerGlobalReminder": "Global reminder",
   "prayerReminderExactTime": "At prayer time",
   "prayerRecommended": "Recommended",
-  "prayerPerPrayerTime": "By prayer time"
+  "prayerPerPrayerTime": "By prayer time",
+  "notificationPermissionScreenTitle": "Notification permission",
+  "notificationPermissionScreenSubtitle": "Prayer reminders stay in your control",
+  "notificationPermissionRequiredChip": "PERMISSION REQUIRED",
+  "notificationPermissionDeniedChip": "PERMISSION NOT GRANTED",
+  "notificationPermissionTitle": "Allow prayer time reminders",
+  "notificationPermissionDescription": "Muslimate needs notification permission so reminders and the adhan can arrive on time, even when the app is not open.",
+  "notificationPermissionDeniedTitle": "Reminders cannot be enabled yet",
+  "notificationPermissionDeniedDescription": "Notification permission was not granted. You can try again to enable prayer time reminders.",
+  "notificationPermissionBenefitAdhan": "Only sends reminders you choose",
+  "notificationPermissionBenefitLocal": "Schedules are processed on your device and never sent to a server",
+  "notificationPermissionBenefitControl": "Can be disabled at any time for each prayer",
+  "notificationPermissionAllow": "Allow notifications",
+  "notificationPermissionRetry": "Try again"
+  ,"notificationPermissionSettings": "Open settings",
+  "notificationPermissionSettingsUnavailable": "Settings could not be opened yet. Fully close the app, then open it again."
 }

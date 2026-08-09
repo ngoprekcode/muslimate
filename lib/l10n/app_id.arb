@@ -142,5 +142,20 @@
   "prayerGlobalReminder": "Pengingat global",
   "prayerReminderExactTime": "Tepat waktu",
   "prayerRecommended": "Disarankan",
-  "prayerPerPrayerTime": "Per waktu shalat"
+  "prayerPerPrayerTime": "Per waktu shalat",
+  "notificationPermissionScreenTitle": "Izin notifikasi",
+  "notificationPermissionScreenSubtitle": "Pengingat shalat tetap dalam kendali Anda",
+  "notificationPermissionRequiredChip": "IZIN DIPERLUKAN",
+  "notificationPermissionDeniedChip": "IZIN BELUM DIBERIKAN",
+  "notificationPermissionTitle": "Izinkan pengingat waktu shalat",
+  "notificationPermissionDescription": "Muslimate memerlukan izin notifikasi agar pengingat dan adzan dapat hadir tepat waktu, termasuk saat aplikasi tidak sedang dibuka.",
+  "notificationPermissionDeniedTitle": "Pengingat belum dapat diaktifkan",
+  "notificationPermissionDeniedDescription": "Izin notifikasi sebelumnya belum diberikan. Anda dapat mencoba lagi agar pengingat waktu shalat berfungsi.",
+  "notificationPermissionBenefitAdhan": "Hanya mengirim pengingat yang Anda pilih",
+  "notificationPermissionBenefitLocal": "Jadwal diproses di perangkat dan tidak dikirim ke server",
+  "notificationPermissionBenefitControl": "Dapat dimatikan kapan saja untuk setiap waktu shalat",
+  "notificationPermissionAllow": "Izinkan notifikasi",
+  "notificationPermissionRetry": "Coba lagi"
+  ,"notificationPermissionSettings": "Buka pengaturan",
+  "notificationPermissionSettingsUnavailable": "Pengaturan belum dapat dibuka. Tutup aplikasi sepenuhnya, lalu buka kembali."
 }

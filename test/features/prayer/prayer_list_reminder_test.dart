@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:muslimate/core/app_theme.dart';
 import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dart';
+import 'package:muslimate/features/notifications/logic/notification_permission_provider.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
 import 'package:muslimate/features/prayer/ui/widgets/prayer_list.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
@@ -22,8 +23,13 @@ void main() {
     await provider.updateLocation(-6.2, 106.816666);
 
     await tester.pumpWidget(
-      ChangeNotifierProvider.value(
-        value: provider,
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider.value(value: provider),
+          ChangeNotifierProvider(
+            create: (_) => NotificationPermissionProvider(scheduler),
+          ),
+        ],
         child: MaterialApp(
           theme: AppTheme.light(),
           locale: const Locale('id'),
@@ -60,7 +66,13 @@ class _FakePrayerNotificationScheduler implements PrayerNotificationScheduler {
   Set<PrayerReminderType> lastEnabledReminders = {};
 
   @override
-  Future<void> requestPermissions() async {}
+  Future<bool> areNotificationsEnabled() async => true;
+
+  @override
+  Future<bool> requestNotificationPermission() async => true;
+
+  @override
+  Future<bool> openNotificationSettings() async => true;
 
   @override
   Future<void> schedulePrayerNotifications({

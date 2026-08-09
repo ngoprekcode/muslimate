@@ -87,7 +87,6 @@ class PrayerProvider extends ChangeNotifier {
   }
 
   Future<void> setReminderMinutes(int minutes) async {
-    await _notificationScheduler.requestPermissions();
     if (_reminderMinutes == minutes) {
       await _schedulePrayerNotifications();
       return;
@@ -115,7 +114,6 @@ class PrayerProvider extends ChangeNotifier {
     if (enabled) {
       _enabledReminders.remove(type);
     } else {
-      await _notificationScheduler.requestPermissions();
       _enabledReminders.add(type);
     }
     notifyListeners();

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:prayers_times/prayers_times.dart';
@@ -17,7 +18,11 @@ extension PrayerReminderTypeBehavior on PrayerReminderType {
 }
 
 abstract interface class PrayerNotificationScheduler {
-  Future<void> requestPermissions();
+  Future<bool> areNotificationsEnabled();
+
+  Future<bool> requestNotificationPermission();
+
+  Future<bool> openNotificationSettings();
 
   Future<void> schedulePrayerNotifications({
     required Coordinates coordinates,
@@ -31,7 +36,13 @@ class NoopPrayerNotificationScheduler implements PrayerNotificationScheduler {
   const NoopPrayerNotificationScheduler();
 
   @override
-  Future<void> requestPermissions() async {}
+  Future<bool> areNotificationsEnabled() async => true;
+
+  @override
+  Future<bool> requestNotificationPermission() async => true;
+
+  @override
+  Future<bool> openNotificationSettings() async => false;
 
   @override
   Future<void> schedulePrayerNotifications({
@@ -44,6 +55,9 @@ class NoopPrayerNotificationScheduler implements PrayerNotificationScheduler {
 
 class AndroidPrayerNotificationScheduler
     implements PrayerNotificationScheduler {
+  static const _settingsChannel = MethodChannel(
+    'com.ngoprekcode.muslimate/notification_settings',
+  );
   static const _scheduledIdsKey = 'prayer_scheduled_notification_ids';
   // Thirty days keeps reminders alive when the app is not opened frequently
   // while remaining below common Android OEM pending-alarm limits.
@@ -74,9 +88,30 @@ class AndroidPrayerNotificationScheduler
       >();
 
   @override
-  Future<void> requestPermissions() async {
-    await _android?.requestNotificationsPermission();
-    await _android?.requestExactAlarmsPermission();
+  Future<bool> areNotificationsEnabled() async =>
+      await _android?.areNotificationsEnabled() ?? false;
+
+  @override
+  Future<bool> requestNotificationPermission() async {
+    final granted = await _android?.requestNotificationsPermission();
+    if (granted ?? false) {
+      await _android?.requestExactAlarmsPermission();
+    }
+    return granted ?? false;
+  }
+
+  @override
+  Future<bool> openNotificationSettings() async {
+    try {
+      await _settingsChannel.invokeMethod<void>('openNotificationSettings');
+      return true;
+    } on MissingPluginException {
+      // Native channels added during development require a full app restart.
+      // Keep the permission flow safe if an older engine is still running.
+      return false;
+    } on PlatformException {
+      return false;
+    }
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dart';
 import 'package:muslimate/features/prayer/logic/prayer_provider.dart';
+import 'package:muslimate/features/notifications/ui/notification_permission_screen.dart';
 import 'package:muslimate/generated/assets/assets.gen.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
@@ -139,7 +140,13 @@ class _PrayerListState extends State<PrayerList> {
                 ? pTime.isBefore(absoluteCurrentTime) || isPastDay
                 : true,
             formattedTime: provider.formatTime(p.time),
-            onReminderTap: () => provider.toggleReminder(p.reminderType),
+            onReminderTap: () async {
+              if (!p.isReminder &&
+                  !await NotificationPermissionScreen.ensureGranted(context)) {
+                return;
+              }
+              await provider.toggleReminder(p.reminderType);
+            },
           );
         }),
       ),

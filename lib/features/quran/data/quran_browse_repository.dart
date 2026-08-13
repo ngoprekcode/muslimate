@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:muslimate/features/quran/models/quran_browse_item.dart';
+import 'package:muslimate/features/quran/models/quran_verse.dart';
 
 abstract interface class QuranBrowseRepository {
   Future<List<QuranBrowseItem>> getSurahs();
   Future<List<QuranBrowseItem>> getJuz();
+  Future<List<QuranVerse>> getVerses();
 }
 
 class AssetQuranBrowseRepository implements QuranBrowseRepository {
@@ -16,16 +18,62 @@ class AssetQuranBrowseRepository implements QuranBrowseRepository {
        _bundle = bundle ?? rootBundle;
 
   static const _coreAsset = 'assets/quran/core/quran_index.json';
+  static const _versesAsset = 'assets/quran/core/verses_uthmani.json';
 
   final String _languageCode;
   final AssetBundle _bundle;
   Future<_QuranBrowseData>? _cachedData;
+  Future<List<QuranVerse>>? _cachedVerses;
 
   @override
   Future<List<QuranBrowseItem>> getSurahs() async => (await _load()).surahs;
 
   @override
   Future<List<QuranBrowseItem>> getJuz() async => (await _load()).juz;
+
+  @override
+  Future<List<QuranVerse>> getVerses() {
+    return _cachedVerses ??= _readVerses();
+  }
+
+  Future<List<QuranVerse>> _readVerses() async {
+    final translationAsset =
+        'assets/quran/languages/$_languageCode/ayah_translations.json';
+    final sources = await Future.wait([
+      _bundle.loadString(_versesAsset),
+      _bundle.loadString(translationAsset),
+    ]);
+    final content = _decodeObject(sources[0], _versesAsset);
+    final language = _decodeObject(sources[1], translationAsset);
+    _validateSchema(content, _versesAsset);
+    _validateSchema(language, translationAsset);
+    if (language['language'] != _languageCode) {
+      throw const FormatException('Quran language asset does not match locale');
+    }
+    final values = content['verses'];
+    final translations = language['ayahTranslations'];
+    if (values is! List ||
+        values.length != 6236 ||
+        translations is! Map<String, dynamic> ||
+        translations.length != values.length) {
+      throw const FormatException('Incomplete Quran verse asset');
+    }
+    final verses = <QuranVerse>[];
+    for (final value in values) {
+      final verse = _asObject(value, 'verse');
+      final id = _asInt(verse['id'], 'verse id');
+      verses.add(
+        QuranVerse(
+          id: id,
+          surahNumber: _asInt(verse['surah'], 'surah number'),
+          ayahNumber: _asInt(verse['ayah'], 'ayah number'),
+          arabic: _asString(verse['arabic'], 'Arabic verse'),
+          translation: _asString(translations['$id'], 'verse translation'),
+        ),
+      );
+    }
+    return List.unmodifiable(verses);
+  }
 
   Future<_QuranBrowseData> _load() {
     return _cachedData ??= _readAssets();

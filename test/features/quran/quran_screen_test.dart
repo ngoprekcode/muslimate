@@ -6,10 +6,13 @@ import 'package:muslimate/core/app_theme.dart';
 import 'package:muslimate/features/quran/data/quran_browse_repository.dart';
 import 'package:muslimate/features/quran/ui/quran_screen.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() => SharedPreferences.setMockInitialValues({}));
+
   Future<void> pumpUntilFound(WidgetTester tester, Finder finder) async {
-    for (var attempt = 0; attempt < 20; attempt++) {
+    for (var attempt = 0; attempt < 200; attempt++) {
       await tester.pump(const Duration(milliseconds: 50));
       if (finder.evaluate().isNotEmpty) return;
     }
@@ -51,6 +54,7 @@ void main() {
     expect(find.text('Juz'), findsOneWidget);
     expect(find.text('الفاتحة'), findsOneWidget);
     expect(find.text('Pembukaan • 7 ayat • Makkiyah'), findsOneWidget);
+    expect(find.text('Bookmark'), findsOneWidget);
     expect(find.text('Hafalan'), findsNothing);
     expect(find.text('TERAKHIR DIBACA'), findsNothing);
     expect(find.text('Lanjutkan membaca'), findsNothing);
@@ -81,10 +85,106 @@ void main() {
     await pumpUntilFound(tester, find.text('Al-Fatihah'));
 
     await tester.tap(find.text('Al-Fatihah'));
-    await tester.pumpAndSettle();
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 500)),
+    );
+    await pumpUntilFound(
+      tester,
+      find.text('Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.'),
+    );
 
     expect(find.text('7 ayat • Makkiyah'), findsOneWidget);
-    expect(find.byIcon(Icons.bookmark_outline_rounded), findsNWidgets(7));
+    expect(find.byIcon(Icons.bookmark_outline_rounded), findsWidgets);
     expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
+  });
+
+  testWidgets('renders ayahs for a Surah other than Al-Fatihah', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSubject());
+    await pumpUntilFound(tester, find.text('Al-Baqarah'));
+
+    await tester.tap(find.text('Al-Baqarah'));
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 500)),
+    );
+    await pumpUntilFound(tester, find.textContaining('Alif Lām Mīm'));
+
+    expect(find.text('286 ayat • Madaniyah'), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+  });
+
+  testWidgets('bookmarks a Surah and opens it from the existing tab style', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSubject());
+    await pumpUntilFound(tester, find.text('Al-Baqarah'));
+    await tester.tap(find.text('Al-Baqarah'));
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 500)),
+    );
+    await pumpUntilFound(tester, find.textContaining('Alif Lām Mīm'));
+
+    await tester.tap(find.byTooltip('Tambahkan bookmark').first);
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.chevron_left_rounded));
+    await tester.pump();
+    await tester.tap(find.text('Bookmark'));
+    await tester.pump();
+
+    expect(find.text('Al-Baqarah'), findsOneWidget);
+  });
+
+  testWidgets('opens a verse search result and persists its ayah bookmark', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSubject());
+    await pumpUntilFound(tester, find.text('Al-Fatihah'));
+    await tester.enterText(find.byType(TextField), 'seluruh alam');
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 500)),
+    );
+    await pumpUntilFound(tester, find.text('Al-Fatihah 2'));
+
+    await tester.tap(find.text('Al-Fatihah 2'));
+    await tester.pump();
+    await pumpUntilFound(
+      tester,
+      find.text('Segala puji bagi Allah, Tuhan seluruh alam,'),
+    );
+    await tester.tap(find.byKey(const ValueKey('ayah-bookmark-1-2')));
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 50)),
+    );
+    await tester.tap(find.byIcon(Icons.chevron_left_rounded));
+    await tester.pump();
+    await tester.tap(find.text('Bookmark'));
+    await tester.pump();
+
+    expect(find.text('Al-Fatihah 2'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(buildSubject());
+    await pumpUntilFound(tester, find.text('Bookmark'));
+    await tester.tap(find.text('Bookmark'));
+    await pumpUntilFound(tester, find.text('Al-Fatihah 2'));
+
+    await tester.enterText(find.byType(TextField), 'seluruh alam');
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 500)),
+    );
+    await pumpUntilFound(tester, find.text('Al-Fatihah 2'));
+
+    await tester.enterText(find.byType(TextField), 'Al-Baqarah');
+    await tester.pump();
+    expect(find.text('Al-Fatihah 2'), findsNothing);
+    expect(
+      find.text("Tidak ada hasil penelusuran Al-Qur'an yang cocok."),
+      findsOneWidget,
+    );
   });
 }

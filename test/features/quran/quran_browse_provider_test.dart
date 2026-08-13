@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:muslimate/features/quran/data/quran_browse_repository.dart';
 import 'package:muslimate/features/quran/logic/quran_browse_provider.dart';
 import 'package:muslimate/features/quran/models/quran_browse_item.dart';
+import 'package:muslimate/features/quran/models/quran_verse.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -64,6 +65,38 @@ void main() {
       expect(first.meaning, 'The Opener');
       expect(first.revelationType, 'Meccan');
     });
+
+    test('searches Quran translation content', () async {
+      final provider = QuranBrowseProvider(
+        AssetQuranBrowseRepository(languageCode: 'id'),
+      );
+      await provider.load();
+
+      provider.search('seluruh alam');
+
+      expect(provider.verseResults, isNotEmpty);
+      expect(provider.verseResults.first.verseKey, '1:2');
+    });
+
+    test('loads the active language ayah translation package', () async {
+      final indonesian = QuranBrowseProvider(
+        AssetQuranBrowseRepository(languageCode: 'id'),
+      );
+      final english = QuranBrowseProvider(
+        AssetQuranBrowseRepository(languageCode: 'en'),
+      );
+
+      await Future.wait([indonesian.load(), english.load()]);
+
+      expect(
+        indonesian.versesForSurah(1).first.translation,
+        'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang.',
+      );
+      expect(
+        english.versesForSurah(1).first.translation,
+        startsWith('In the name of Allāh'),
+      );
+    });
   });
 }
 
@@ -74,4 +107,7 @@ class _FailingRepository implements QuranBrowseRepository {
   @override
   Future<List<QuranBrowseItem>> getSurahs() =>
       Future.error(StateError('failed'));
+
+  @override
+  Future<List<QuranVerse>> getVerses() => Future.error(StateError('failed'));
 }

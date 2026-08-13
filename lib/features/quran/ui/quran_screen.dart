@@ -4,26 +4,41 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/core/app_tokens.dart';
+import 'package:muslimate/features/quran/data/quran_bookmark_store.dart';
 import 'package:muslimate/features/quran/data/quran_browse_repository.dart';
+import 'package:muslimate/features/quran/logic/quran_bookmark_provider.dart';
 import 'package:muslimate/features/quran/logic/quran_browse_provider.dart';
+import 'package:muslimate/features/quran/models/quran_bookmark.dart';
 import 'package:muslimate/features/quran/models/quran_browse_item.dart';
+import 'package:muslimate/features/quran/models/quran_verse.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
 class QuranScreen extends StatelessWidget {
-  const QuranScreen({super.key, this.repository});
+  const QuranScreen({super.key, this.repository, this.bookmarkStore});
 
   final QuranBrowseRepository? repository;
+  final QuranBookmarkStore? bookmarkStore;
 
   @override
   Widget build(BuildContext context) {
     final languageCode = Localizations.localeOf(context).languageCode;
-    return ChangeNotifierProvider(
+    return MultiProvider(
       key: ValueKey(languageCode),
-      create: (_) => QuranBrowseProvider(
-        repository ?? AssetQuranBrowseRepository(languageCode: languageCode),
-      )..load(),
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => QuranBrowseProvider(
+            repository ??
+                AssetQuranBrowseRepository(languageCode: languageCode),
+          )..load(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => QuranBookmarkProvider(
+            bookmarkStore ?? SharedPreferencesQuranBookmarkStore(),
+          )..load(),
+        ),
+      ],
       child: const _QuranView(),
     );
   }
@@ -40,7 +55,8 @@ class _QuranViewState extends State<_QuranView> {
   static const _showLastRead = false;
   final _searchController = TextEditingController();
   QuranBrowseType _activeType = QuranBrowseType.surah;
-  QuranBrowseItem? _readingPosition;
+  bool _showBookmarks = false;
+  ({QuranBrowseItem surah, int ayah})? _readingPosition;
 
   @override
   void dispose() {
@@ -54,7 +70,8 @@ class _QuranViewState extends State<_QuranView> {
     return position == null
         ? _buildBrowse(context)
         : _QuranReader(
-            position: position,
+            position: position.surah,
+            initialAyah: position.ayah,
             onBack: () => setState(() => _readingPosition = null),
           );
   }
@@ -71,6 +88,7 @@ class _QuranViewState extends State<_QuranView> {
             AppScreenHeader(
               title: l10n.quranTitle,
               subtitle: l10n.quranSubtitle,
+              showBackButton: false,
             ),
             Expanded(
               child: ListView(
@@ -78,14 +96,17 @@ class _QuranViewState extends State<_QuranView> {
                   if (_showLastRead)
                     _LastReadCard(
                       onContinue: () => setState(
-                        () => _readingPosition = const QuranBrowseItem(
-                          type: QuranBrowseType.surah,
-                          number: 18,
-                          title: 'Al-Kahf',
-                          surahNumber: 18,
-                          ayahNumber: 10,
-                          ayahCount: 110,
-                          revelationType: 'Makkiyah',
+                        () => _readingPosition = (
+                          surah: const QuranBrowseItem(
+                            type: QuranBrowseType.surah,
+                            number: 18,
+                            title: 'Al-Kahf',
+                            surahNumber: 18,
+                            ayahNumber: 10,
+                            ayahCount: 110,
+                            revelationType: 'Makkiyah',
+                          ),
+                          ayah: 10,
                         ),
                       ),
                     ),
@@ -141,13 +162,26 @@ class _QuranViewState extends State<_QuranView> {
                   ),
                   _BrowseTabs(
                     activeType: _activeType,
-                    onChanged: (value) => setState(() => _activeType = value),
+                    showBookmarks: _showBookmarks,
+                    onChanged: (value) => setState(() {
+                      _activeType = value;
+                      _showBookmarks = false;
+                    }),
+                    onBookmarks: () => setState(() => _showBookmarks = true),
                   ),
-                  _BrowseResults(
-                    type: _activeType,
-                    onSelected: (item) =>
-                        setState(() => _readingPosition = item),
-                  ),
+                  if (_showBookmarks)
+                    _BookmarkResults(
+                      onSelected: (surah, ayah) => setState(
+                        () => _readingPosition = (surah: surah, ayah: ayah),
+                      ),
+                    )
+                  else
+                    _BrowseResults(
+                      type: _activeType,
+                      onSelected: (item, ayah) => setState(
+                        () => _readingPosition = (surah: item, ayah: ayah),
+                      ),
+                    ),
                   const SizedBox(height: AppSpacing.xxl),
                 ],
               ),
@@ -246,10 +280,17 @@ class _LastReadCard extends StatelessWidget {
 }
 
 class _BrowseTabs extends StatelessWidget {
-  const _BrowseTabs({required this.activeType, required this.onChanged});
+  const _BrowseTabs({
+    required this.activeType,
+    required this.showBookmarks,
+    required this.onChanged,
+    required this.onBookmarks,
+  });
 
   final QuranBrowseType activeType;
+  final bool showBookmarks;
   final ValueChanged<QuranBrowseType> onChanged;
+  final VoidCallback onBookmarks;
 
   @override
   Widget build(BuildContext context) {
@@ -262,28 +303,59 @@ class _BrowseTabs extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 14, AppSpacing.lg, 0),
       child: Row(
-        children: tabs.map((tab) {
-          final selected = tab.$1 == activeType;
-          return GestureDetector(
-            onTap: () => onChanged(tab.$1),
-            child: Container(
-              margin: const EdgeInsets.only(right: 6),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              decoration: BoxDecoration(
-                color: selected ? colors.navy : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppRadius.full),
-              ),
-              child: Text(
-                tab.$2,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: selected ? AppColors.light.surface : colors.inkSoft,
+        children:
+            tabs.map((tab) {
+              final selected = !showBookmarks && tab.$1 == activeType;
+              return GestureDetector(
+                onTap: () => onChanged(tab.$1),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected ? colors.navy : Colors.transparent,
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                  ),
+                  child: Text(
+                    tab.$2,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: selected
+                          ? AppColors.light.surface
+                          : colors.inkSoft,
+                    ),
+                  ),
+                ),
+              );
+            }).toList()..add(
+              GestureDetector(
+                onTap: onBookmarks,
+                child: Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: showBookmarks ? colors.navy : Colors.transparent,
+                    borderRadius: BorderRadius.circular(AppRadius.full),
+                  ),
+                  child: Text(
+                    l10n.quranBookmarksTab,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: showBookmarks
+                          ? AppColors.light.surface
+                          : colors.inkSoft,
+                    ),
+                  ),
                 ),
               ),
             ),
-          );
-        }).toList(),
       ),
     );
   }
@@ -293,7 +365,7 @@ class _BrowseResults extends StatelessWidget {
   const _BrowseResults({required this.type, required this.onSelected});
 
   final QuranBrowseType type;
-  final ValueChanged<QuranBrowseItem> onSelected;
+  final void Function(QuranBrowseItem item, int ayah) onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -319,7 +391,8 @@ class _BrowseResults extends StatelessWidget {
     }
 
     final results = provider.results(type);
-    if (results.isEmpty) {
+    final verseResults = provider.verseResults;
+    if (results.isEmpty && verseResults.isEmpty) {
       return _MessageState(
         icon: Icons.search_off_rounded,
         message: l10n.quranNoResults,
@@ -328,14 +401,231 @@ class _BrowseResults extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
       child: Column(
-        children: results.map((item) {
-          final isSurah = item.type == QuranBrowseType.surah;
-          final subtitle = isSurah
-              ? '${item.meaning} • ${l10n.quranSurahMetadata(item.ayahCount!, item.revelationType!)}'
-              : l10n.quranJuzStartsAt(item.surahNumber, item.ayahNumber);
+        children: [
+          ...results.map((item) {
+            final isSurah = item.type == QuranBrowseType.surah;
+            final subtitle = isSurah
+                ? '${item.meaning} • ${l10n.quranSurahMetadata(item.ayahCount!, item.revelationType!)}'
+                : l10n.quranJuzStartsAt(item.surahNumber, item.ayahNumber);
+            return GestureDetector(
+              key: ValueKey('${item.type.name}-${item.number}'),
+              onTap: () => onSelected(
+                provider.surah(item.surahNumber)!,
+                item.ayahNumber,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 14,
+                  horizontal: 6,
+                ),
+                decoration: BoxDecoration(
+                  border: Border(bottom: BorderSide(color: colors.hairline)),
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 38,
+                      height: 38,
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          CustomPaint(
+                            size: const Size(38, 38),
+                            painter: _StarBorderPainter(colors.goldSoft),
+                          ),
+                          Text(
+                            '${item.number}',
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: colors.goldDeep,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.title,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                              color: colors.ink,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            style: GoogleFonts.plusJakartaSans(
+                              fontSize: 11.5,
+                              color: colors.inkMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (isSurah)
+                      Text(
+                        item.arabicTitle!,
+                        textDirection: TextDirection.rtl,
+                        style: GoogleFonts.amiri(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: colors.gold,
+                        ),
+                      )
+                    else
+                      Icon(Icons.chevron_right_rounded, color: colors.inkMuted),
+                  ],
+                ),
+              ),
+            );
+          }),
+          ...verseResults.map(
+            (verse) => _VerseSearchResult(
+              verse: verse,
+              surah: provider.surah(verse.surahNumber)!,
+              onTap: () => onSelected(
+                provider.surah(verse.surahNumber)!,
+                verse.ayahNumber,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VerseSearchResult extends StatelessWidget {
+  const _VerseSearchResult({
+    required this.verse,
+    required this.surah,
+    required this.onTap,
+  });
+
+  final QuranVerse verse;
+  final QuranBrowseItem surah;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: colors.hairline)),
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 38,
+              height: 38,
+              child: Center(
+                child: Text(
+                  '${verse.ayahNumber}',
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                    color: colors.goldDeep,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${surah.title} ${verse.ayahNumber}',
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w700,
+                      color: colors.ink,
+                    ),
+                  ),
+                  Text(
+                    verse.translation,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      color: colors.inkMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BookmarkResults extends StatelessWidget {
+  const _BookmarkResults({required this.onSelected});
+
+  final void Function(QuranBrowseItem surah, int ayah) onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final provider = context.watch<QuranBookmarkProvider>();
+    final browse = context.watch<QuranBrowseProvider>();
+    final colors = AppColors.of(context);
+    final l10n = AppLocalizations.of(context)!;
+    if (provider.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.xxl),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (provider.bookmarks.isEmpty) {
+      return _MessageState(
+        icon: Icons.bookmark_border_rounded,
+        message: l10n.quranNoBookmarks,
+      );
+    }
+    final normalizedQuery = browse.query.trim().toLowerCase();
+    if (normalizedQuery.isNotEmpty && !browse.versesReady) {
+      return const Padding(
+        padding: EdgeInsets.all(AppSpacing.xxl),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+    final bookmarks = provider.bookmarks
+        .where((bookmark) {
+          if (normalizedQuery.isEmpty) return true;
+          final surah = browse.surah(bookmark.surahNumber);
+          if (surah == null) return false;
+          if (surah.searchText.contains(normalizedQuery)) return true;
+          final ayahNumber = bookmark.ayahNumber;
+          if (ayahNumber == null) return false;
+          final verse = browse.verse(bookmark.surahNumber, ayahNumber);
+          return verse?.searchText.contains(normalizedQuery) ?? false;
+        })
+        .toList(growable: false);
+    if (bookmarks.isEmpty) {
+      return _MessageState(
+        icon: Icons.search_off_rounded,
+        message: l10n.quranNoResults,
+      );
+    }
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
+      child: Column(
+        children: bookmarks.map((bookmark) {
+          final surah = browse.surah(bookmark.surahNumber)!;
+          final isAyah = bookmark.type == QuranBookmarkType.ayah;
           return GestureDetector(
-            key: ValueKey('${item.type.name}-${item.number}'),
-            onTap: () => onSelected(item),
+            onTap: () => onSelected(surah, bookmark.ayahNumber ?? 1),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
               decoration: BoxDecoration(
@@ -343,63 +633,37 @@ class _BrowseResults extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  SizedBox(
-                    width: 38,
-                    height: 38,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CustomPaint(
-                          size: const Size(38, 38),
-                          painter: _StarBorderPainter(colors.goldSoft),
-                        ),
-                        Text(
-                          '${item.number}',
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w700,
-                            color: colors.goldDeep,
-                          ),
-                        ),
-                      ],
-                    ),
+                  Icon(
+                    isAyah
+                        ? Icons.format_quote_rounded
+                        : Icons.menu_book_rounded,
+                    color: colors.goldDeep,
                   ),
                   const SizedBox(width: 14),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
-                            color: colors.ink,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle,
-                          style: GoogleFonts.plusJakartaSans(
-                            fontSize: 11.5,
-                            color: colors.inkMuted,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      isAyah
+                          ? '${surah.title} ${bookmark.ayahNumber}'
+                          : surah.title,
+                      style: GoogleFonts.plusJakartaSans(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w700,
+                        color: colors.ink,
+                      ),
                     ),
                   ),
-                  if (isSurah)
-                    Text(
-                      item.arabicTitle!,
-                      textDirection: TextDirection.rtl,
-                      style: GoogleFonts.amiri(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: colors.gold,
-                      ),
-                    )
-                  else
-                    Icon(Icons.chevron_right_rounded, color: colors.inkMuted),
+                  IconButton(
+                    onPressed: () => isAyah
+                        ? provider.toggleAyah(
+                            bookmark.surahNumber,
+                            bookmark.ayahNumber!,
+                          )
+                        : provider.toggleSurah(bookmark.surahNumber),
+                    icon: Icon(
+                      Icons.bookmark_remove_rounded,
+                      color: colors.inkMuted,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -440,10 +704,18 @@ class _MessageState extends StatelessWidget {
 }
 
 class _QuranReader extends StatelessWidget {
-  const _QuranReader({required this.position, required this.onBack});
+  const _QuranReader({
+    required this.position,
+    required this.initialAyah,
+    required this.onBack,
+  });
   final QuranBrowseItem position;
+  final int initialAyah;
   final VoidCallback onBack;
 
+  // Kept only as the archived reader prototype reference while real ayahs are
+  // loaded from the approved Quran asset source.
+  // ignore: unused_field
   static const _ayat = [
     _Ayah(
       1,
@@ -478,6 +750,11 @@ class _QuranReader extends StatelessWidget {
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final verses = context.watch<QuranBrowseProvider>().versesForSurah(
+      position.surahNumber,
+      fromAyah: initialAyah,
+    );
+    final bookmarks = context.watch<QuranBookmarkProvider>();
     return Scaffold(
       backgroundColor: c.bg,
       body: SafeArea(
@@ -524,113 +801,147 @@ class _QuranReader extends StatelessWidget {
                     ],
                   ),
                 ),
-                const SizedBox(width: 52),
+                IconButton(
+                  key: ValueKey('surah-bookmark-${position.surahNumber}'),
+                  tooltip: bookmarks.containsSurah(position.surahNumber)
+                      ? l10n.quranRemoveBookmark
+                      : l10n.quranAddBookmark,
+                  onPressed: () => bookmarks.toggleSurah(position.surahNumber),
+                  icon: Icon(
+                    bookmarks.containsSurah(position.surahNumber)
+                        ? Icons.bookmark_rounded
+                        : Icons.bookmark_outline_rounded,
+                    color: c.inkMuted,
+                  ),
+                ),
               ],
             ),
             Expanded(
-              child: ListView(
-                children: [
-                  if (position.surahNumber == 1) ...[
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 20,
-                          horizontal: 16,
-                        ),
-                        decoration: BoxDecoration(
-                          color: c.navy,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Column(
-                          children: [
-                            AppArabicText(
-                              text: 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
-                              fontSize: 26,
-                              color: c.gold,
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang',
-                              style: GoogleFonts.plusJakartaSans(
-                                fontSize: 11,
-                                color: AppColors.dark.inkSoft,
-                                fontStyle: FontStyle.italic,
+              child: verses.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : ListView(
+                      children: [
+                        if (position.surahNumber == 1 && initialAyah == 1)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 20,
+                                horizontal: 16,
                               ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
-                      child: Column(
-                        children: _ayat.map((a) {
-                          return Container(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            decoration: BoxDecoration(
-                              border: Border(
-                                bottom: BorderSide(color: c.hairline),
+                              decoration: BoxDecoration(
+                                color: c.navy,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Column(
+                                children: [
+                                  AppArabicText(
+                                    text:
+                                        'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ',
+                                    fontSize: 26,
+                                    color: c.gold,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Dengan nama Allah Yang Maha Pengasih, Maha Penyayang',
+                                    style: GoogleFonts.plusJakartaSans(
+                                      fontSize: 11,
+                                      color: AppColors.dark.inkSoft,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                Row(
+                          ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+                          child: Column(
+                            children: verses.map((a) {
+                              final bookmarked = bookmarks.containsAyah(
+                                a.surahNumber,
+                                a.ayahNumber,
+                              );
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                decoration: BoxDecoration(
+                                  border: Border(
+                                    bottom: BorderSide(color: c.hairline),
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
-                                    Container(
-                                      width: 28,
-                                      height: 28,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: c.goldSoft,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          '${a.number}',
-                                          style: GoogleFonts.plusJakartaSans(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            color: c.goldDeep,
+                                    Row(
+                                      children: [
+                                        Container(
+                                          width: 28,
+                                          height: 28,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            color: c.goldSoft,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              '${a.ayahNumber}',
+                                              style:
+                                                  GoogleFonts.plusJakartaSans(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.w700,
+                                                    color: c.goldDeep,
+                                                  ),
+                                            ),
                                           ),
                                         ),
-                                      ),
+                                        const Spacer(),
+                                        IconButton(
+                                          key: ValueKey(
+                                            'ayah-bookmark-${a.surahNumber}-${a.ayahNumber}',
+                                          ),
+                                          onPressed: () => bookmarks.toggleAyah(
+                                            a.surahNumber,
+                                            a.ayahNumber,
+                                          ),
+                                          icon: Icon(
+                                            bookmarked
+                                                ? Icons.bookmark_rounded
+                                                : Icons
+                                                      .bookmark_outline_rounded,
+                                            color: c.inkMuted,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    const Spacer(),
-                                    Icon(
-                                      Icons.bookmark_outline_rounded,
-                                      color: c.inkMuted,
-                                      size: 20,
+                                    const SizedBox(height: 12),
+                                    AppArabicText(
+                                      text: a.arabic,
+                                      fontSize: 26,
+                                      color: c.ink,
+                                      height: 2.2,
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      a.translation,
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 13.5,
+                                        height: 1.6,
+                                        color: c.inkSoft,
+                                      ),
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 12),
-                                AppArabicText(
-                                  text: a.arabic,
-                                  fontSize: 26,
-                                  color: c.ink,
-                                  height: 2.2,
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  a.translation,
-                                  style: GoogleFonts.plusJakartaSans(
-                                    fontSize: 13.5,
-                                    height: 1.6,
-                                    color: c.inkSoft,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ],
-              ),
             ),
           ],
         ),

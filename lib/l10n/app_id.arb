@@ -196,5 +196,12 @@
   "@quranReaderPosition": {"placeholders": {"surah": {"type": "int"}, "ayah": {"type": "int"}}},
   "quranNoResults": "Tidak ada hasil penelusuran Al-Qur'an yang cocok.",
   "quranLoadError": "Data penelusuran Al-Qur'an tidak dapat dimuat.",
-  "quranRetry": "Coba lagi"
+  "quranRetry": "Coba lagi",
+  "quranBookmarksTab": "Bookmark",
+  "quranAddBookmark": "Tambahkan bookmark",
+  "quranRemoveBookmark": "Hapus bookmark",
+  "quranNoBookmarks": "Surah dan ayat yang disimpan akan muncul di sini.",
+  "quranSurahResult": "Surah",
+  "quranSurahBookmark": "Bookmark surah",
+  "quranAyahBookmark": "Bookmark ayat"
 }

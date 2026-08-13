@@ -216,5 +216,12 @@
   "@quranReaderPosition": {"placeholders": {"surah": {"type": "int"}, "ayah": {"type": "int"}}},
   "quranNoResults": "No matching Quran browsing results.",
   "quranLoadError": "Quran browsing data could not be loaded.",
-  "quranRetry": "Try again"
+  "quranRetry": "Try again",
+  "quranBookmarksTab": "Bookmarks",
+  "quranAddBookmark": "Add bookmark",
+  "quranRemoveBookmark": "Remove bookmark",
+  "quranNoBookmarks": "Your saved surahs and ayahs will appear here.",
+  "quranSurahResult": "Surah",
+  "quranSurahBookmark": "Surah bookmark",
+  "quranAyahBookmark": "Ayah bookmark"
 }

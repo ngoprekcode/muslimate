@@ -75,6 +75,7 @@ class MuslimateApp extends StatelessWidget {
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),
       themeMode: settings.isDark ? ThemeMode.dark : ThemeMode.light,
+      locale: settings.locale,
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,

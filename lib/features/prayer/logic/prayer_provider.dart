@@ -46,6 +46,9 @@ class PrayerProvider extends ChangeNotifier {
   bool isReminderEnabled(PrayerReminderType type) =>
       _enabledReminders.contains(type);
 
+  /// Whether at least one prayer reminder is switched on.
+  bool get hasEnabledReminder => _enabledReminders.isNotEmpty;
+
   bool _disposed = false;
   final PrayerNotificationScheduler _notificationScheduler;
 

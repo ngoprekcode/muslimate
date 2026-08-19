@@ -78,6 +78,18 @@ void main() {
       expect(provider.verseResults.first.verseKey, '1:2');
     });
 
+    test('resolves the exact juz at Quran boundaries', () async {
+      final provider = QuranBrowseProvider(
+        AssetQuranBrowseRepository(languageCode: 'id'),
+      );
+      await provider.load();
+
+      expect(provider.juzFor(1, 1), 1);
+      expect(provider.juzFor(2, 141), 1);
+      expect(provider.juzFor(2, 142), 2);
+      expect(provider.juzFor(114, 6), 30);
+    });
+
     test('loads the active language ayah translation package', () async {
       final indonesian = QuranBrowseProvider(
         AssetQuranBrowseRepository(languageCode: 'id'),

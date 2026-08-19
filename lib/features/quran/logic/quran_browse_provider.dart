@@ -34,6 +34,19 @@ class QuranBrowseProvider extends ChangeNotifier {
     return null;
   }
 
+  int? juzFor(int surahNumber, int ayahNumber) {
+    if (_juz.isEmpty || surahNumber < 1 || ayahNumber < 1) return null;
+    QuranBrowseItem? current;
+    for (final juz in _juz) {
+      final startsBeforeOrAt =
+          juz.surahNumber < surahNumber ||
+          (juz.surahNumber == surahNumber && juz.ayahNumber <= ayahNumber);
+      if (!startsBeforeOrAt) break;
+      current = juz;
+    }
+    return current?.number;
+  }
+
   List<QuranVerse> versesForSurah(int surahNumber, {int fromAyah = 1}) =>
       _verses
           .where(

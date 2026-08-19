@@ -135,7 +135,7 @@ void main() {
     await tester.tap(find.text('Bookmark'));
     await tester.pump();
 
-    expect(find.text('Al-Baqarah'), findsOneWidget);
+    expect(find.text('Al-Baqarah'), findsWidgets);
   });
 
   testWidgets('opens a verse search result and persists its ayah bookmark', (
@@ -186,5 +186,39 @@ void main() {
       find.text("Tidak ada hasil penelusuran Al-Qur'an yang cocok."),
       findsOneWidget,
     );
+  });
+
+  testWidgets('persists last read and continues at the exact saved ayah', (
+    tester,
+  ) async {
+    await tester.pumpWidget(buildSubject());
+    await pumpUntilFound(tester, find.text('Al-Fatihah'));
+
+    await tester.tap(find.text('Juz'));
+    await tester.pump();
+    await tester.tap(find.text('Juz 2'));
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 500)),
+    );
+    await pumpUntilFound(tester, find.byKey(const ValueKey('ayah-2-142')));
+
+    await tester.tap(find.byIcon(Icons.chevron_left_rounded));
+    await tester.pump();
+    expect(find.text('TERAKHIR DIBACA'), findsOneWidget);
+    expect(find.text('Al-Baqarah'), findsOneWidget);
+    expect(find.text('Ayat 142 • Juz 2'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pumpWidget(buildSubject());
+    await pumpUntilFound(tester, find.text('Lanjutkan membaca'));
+
+    await tester.tap(find.text('Lanjutkan membaca'));
+    await tester.pump();
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 500)),
+    );
+    await pumpUntilFound(tester, find.byKey(const ValueKey('ayah-2-142')));
+    expect(find.byKey(const ValueKey('ayah-2-141')), findsNothing);
   });
 }

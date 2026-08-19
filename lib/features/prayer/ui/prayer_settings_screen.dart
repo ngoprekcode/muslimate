@@ -368,12 +368,15 @@ class _SettingsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final c = AppColors.of(context);
-    return Container(
+    // A Material rather than a decorated Container: the rows inside are
+    // ListTiles, which paint their background and ink splashes on the nearest
+    // Material ancestor and would otherwise be hidden behind the decoration.
+    return Material(
+      color: c.surface,
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        color: c.surface,
+      shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: c.hairline),
+        side: BorderSide(color: c.hairline),
       ),
       child: Column(
         children: [

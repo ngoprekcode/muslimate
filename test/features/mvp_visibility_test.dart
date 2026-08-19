@@ -3,10 +3,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:muslimate/core/app_theme.dart';
 import 'package:muslimate/features/home/ui/widgets/home_quick_actions.dart';
 import 'package:muslimate/features/home/ui/widgets/home_top_bar.dart';
-import 'package:muslimate/features/settings/ui/settings_screen.dart';
 import 'package:muslimate/shared/widgets/app_bottom_nav_bar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../support/settings_test_harness.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   Widget testApp(Widget child) {
     return MaterialApp(
       theme: AppTheme.light(),
@@ -58,7 +62,9 @@ void main() {
   });
 
   testWidgets('settings hides non-MVP options', (tester) async {
-    await tester.pumpWidget(testApp(const SettingsScreen()));
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(buildSettingsTestApp());
+    await tester.pump();
 
     expect(find.text('Tema gelap'), findsNothing);
     expect(find.text('Tipografi Arab'), findsNothing);

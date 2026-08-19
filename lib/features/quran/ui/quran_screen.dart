@@ -16,23 +16,36 @@ import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
 class QuranScreen extends StatelessWidget {
-  const QuranScreen({super.key, this.repository, this.bookmarkStore});
+  const QuranScreen({
+    super.key,
+    this.repository,
+    this.bookmarkStore,
+    this.useSharedBookmarkProvider = false,
+  });
 
   final QuranBrowseRepository? repository;
   final QuranBookmarkStore? bookmarkStore;
+  final bool useSharedBookmarkProvider;
 
   @override
   Widget build(BuildContext context) {
     final languageCode = Localizations.localeOf(context).languageCode;
+    final browseProvider = ChangeNotifierProvider(
+      create: (_) => QuranBrowseProvider(
+        repository ?? AssetQuranBrowseRepository(languageCode: languageCode),
+      )..load(),
+    );
+    if (useSharedBookmarkProvider) {
+      return MultiProvider(
+        key: ValueKey(languageCode),
+        providers: [browseProvider],
+        child: const _QuranView(),
+      );
+    }
     return MultiProvider(
       key: ValueKey(languageCode),
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => QuranBrowseProvider(
-            repository ??
-                AssetQuranBrowseRepository(languageCode: languageCode),
-          )..load(),
-        ),
+        browseProvider,
         ChangeNotifierProvider(
           create: (_) => QuranBookmarkProvider(
             bookmarkStore ?? SharedPreferencesQuranBookmarkStore(),

@@ -55,6 +55,10 @@
   "homeLocPermTitle": "Enable location for prayer times",
   "homeLocPermDesc": "We need your location to provide accurate prayer schedules based on your city.",
   "homeLocPermBtn": "Enable location",
+  "homeDailyVerseTitle": "Verse of the Day",
+  "homeDailyVerseSeeAll": "See all",
+  "homeDailyVerseEmpty": "No Quran verse is available today.",
+  "homeDailyVerseError": "Today's verse could not be loaded.",
   "hijri": "Hijri",
 
   "calendarTitle": "Calendar",

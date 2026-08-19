@@ -35,6 +35,10 @@
   "homeLocPermTitle": "Aktifkan lokasi untuk waktu shalat",
   "homeLocPermDesc": "Kami butuh lokasi kamu agar jadwal shalat akurat sesuai kota tempat kamu berada.",
   "homeLocPermBtn": "Aktifkan lokasi",
+  "homeDailyVerseTitle": "Ayat Hari Ini",
+  "homeDailyVerseSeeAll": "Lihat semua",
+  "homeDailyVerseEmpty": "Belum ada ayat Al-Qur'an yang tersedia hari ini.",
+  "homeDailyVerseError": "Ayat hari ini tidak dapat dimuat.",
   "hijri": "Hijriah",
 
   "calendarTitle": "Kalender",

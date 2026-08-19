@@ -9,6 +9,8 @@ import 'package:muslimate/features/home/ui/home_screen.dart';
 import 'package:muslimate/features/prayer/ui/prayer_schedule_screen.dart';
 import 'package:muslimate/features/qibla/ui/qibla_screen.dart';
 import 'package:muslimate/features/quran/ui/quran_screen.dart';
+import 'package:muslimate/features/quran/data/quran_bookmark_store.dart';
+import 'package:muslimate/features/quran/logic/quran_bookmark_provider.dart';
 // Hidden for SCRUM-5. Restore this import when Hadith returns to the UI.
 // import 'package:muslimate/features/hadith/ui/hadith_screen.dart';
 // Hidden for SCRUM-5. Restore this import when Calendar returns to the UI.
@@ -56,6 +58,11 @@ void main() async {
         ChangeNotifierProvider(create: (_) => QiblaProvider()),
         ChangeNotifierProvider(create: (_) => CalendarProvider()),
         ChangeNotifierProvider(create: (_) => AsmaulHusnaProvider()),
+        ChangeNotifierProvider(
+          create: (_) =>
+              QuranBookmarkProvider(SharedPreferencesQuranBookmarkStore())
+                ..load(),
+        ),
       ],
       child: const MuslimateApp(),
     ),
@@ -96,7 +103,7 @@ class MuslimateApp extends StatelessWidget {
             page = const QiblaScreen();
             break;
           case '/quran':
-            page = const QuranScreen();
+            page = const QuranScreen(useSharedBookmarkProvider: true);
             break;
           // Hidden for SCRUM-5. Restore these routes with their imports when
           // Hadith and Calendar are included in the release scope again.
@@ -131,7 +138,7 @@ class _MainShellState extends State<MainShell> {
   final List<Widget> _screens = const [
     HomeScreen(),
     PrayerScheduleScreen(),
-    QuranScreen(),
+    QuranScreen(useSharedBookmarkProvider: true),
     // Hidden for SCRUM-5. Restore this screen together with the Wirid tab.
     // DhikrScreen(),
     SettingsScreen(),

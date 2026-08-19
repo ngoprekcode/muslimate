@@ -6,26 +6,34 @@ import 'package:muslimate/core/app_colors.dart';
 import 'package:muslimate/core/app_tokens.dart';
 import 'package:muslimate/features/quran/data/quran_bookmark_store.dart';
 import 'package:muslimate/features/quran/data/quran_browse_repository.dart';
+import 'package:muslimate/features/quran/data/quran_last_read_store.dart';
 import 'package:muslimate/features/quran/logic/quran_bookmark_provider.dart';
 import 'package:muslimate/features/quran/logic/quran_browse_provider.dart';
+import 'package:muslimate/features/quran/logic/quran_last_read_provider.dart';
 import 'package:muslimate/features/quran/models/quran_bookmark.dart';
 import 'package:muslimate/features/quran/models/quran_browse_item.dart';
+import 'package:muslimate/features/quran/models/quran_last_read.dart';
 import 'package:muslimate/features/quran/models/quran_verse.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
+import 'package:provider/single_child_widget.dart';
 
 class QuranScreen extends StatelessWidget {
   const QuranScreen({
     super.key,
     this.repository,
     this.bookmarkStore,
+    this.lastReadStore,
     this.useSharedBookmarkProvider = false,
+    this.useSharedLastReadProvider = false,
   });
 
   final QuranBrowseRepository? repository;
   final QuranBookmarkStore? bookmarkStore;
+  final QuranLastReadStore? lastReadStore;
   final bool useSharedBookmarkProvider;
+  final bool useSharedLastReadProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -35,23 +43,28 @@ class QuranScreen extends StatelessWidget {
         repository ?? AssetQuranBrowseRepository(languageCode: languageCode),
       )..load(),
     );
-    if (useSharedBookmarkProvider) {
-      return MultiProvider(
-        key: ValueKey(languageCode),
-        providers: [browseProvider],
-        child: const _QuranView(),
-      );
-    }
-    return MultiProvider(
-      key: ValueKey(languageCode),
-      providers: [
-        browseProvider,
+    final providers = <SingleChildWidget>[browseProvider];
+    if (!useSharedBookmarkProvider) {
+      providers.add(
         ChangeNotifierProvider(
           create: (_) => QuranBookmarkProvider(
             bookmarkStore ?? SharedPreferencesQuranBookmarkStore(),
           )..load(),
         ),
-      ],
+      );
+    }
+    if (!useSharedLastReadProvider) {
+      providers.add(
+        ChangeNotifierProvider(
+          create: (_) => QuranLastReadProvider(
+            lastReadStore ?? SharedPreferencesQuranLastReadStore(),
+          )..load(),
+        ),
+      );
+    }
+    return MultiProvider(
+      key: ValueKey(languageCode),
+      providers: providers,
       child: const _QuranView(),
     );
   }
@@ -65,7 +78,6 @@ class _QuranView extends StatefulWidget {
 }
 
 class _QuranViewState extends State<_QuranView> {
-  static const _showLastRead = false;
   final _searchController = TextEditingController();
   QuranBrowseType _activeType = QuranBrowseType.surah;
   bool _showBookmarks = false;
@@ -92,6 +104,12 @@ class _QuranViewState extends State<_QuranView> {
   Widget _buildBrowse(BuildContext context) {
     final colors = AppColors.of(context);
     final l10n = AppLocalizations.of(context)!;
+    final browse = context.watch<QuranBrowseProvider>();
+    final lastRead = context.watch<QuranLastReadProvider>();
+    final savedPosition = _validLastRead(lastRead.position, browse);
+    final savedSurah = savedPosition == null
+        ? null
+        : browse.surah(savedPosition.surahNumber);
 
     return Scaffold(
       backgroundColor: colors.bg,
@@ -106,22 +124,12 @@ class _QuranViewState extends State<_QuranView> {
             Expanded(
               child: ListView(
                 children: [
-                  if (_showLastRead)
+                  if (savedPosition != null && savedSurah != null)
                     _LastReadCard(
-                      onContinue: () => setState(
-                        () => _readingPosition = (
-                          surah: const QuranBrowseItem(
-                            type: QuranBrowseType.surah,
-                            number: 18,
-                            title: 'Al-Kahf',
-                            surahNumber: 18,
-                            ayahNumber: 10,
-                            ayahCount: 110,
-                            revelationType: 'Makkiyah',
-                          ),
-                          ayah: 10,
-                        ),
-                      ),
+                      position: savedPosition,
+                      surahTitle: savedSurah.title,
+                      onContinue: () =>
+                          _openReader(savedSurah, savedPosition.ayahNumber),
                     ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(
@@ -183,18 +191,9 @@ class _QuranViewState extends State<_QuranView> {
                     onBookmarks: () => setState(() => _showBookmarks = true),
                   ),
                   if (_showBookmarks)
-                    _BookmarkResults(
-                      onSelected: (surah, ayah) => setState(
-                        () => _readingPosition = (surah: surah, ayah: ayah),
-                      ),
-                    )
+                    _BookmarkResults(onSelected: _openReader)
                   else
-                    _BrowseResults(
-                      type: _activeType,
-                      onSelected: (item, ayah) => setState(
-                        () => _readingPosition = (surah: item, ayah: ayah),
-                      ),
-                    ),
+                    _BrowseResults(type: _activeType, onSelected: _openReader),
                   const SizedBox(height: AppSpacing.xxl),
                 ],
               ),
@@ -204,11 +203,50 @@ class _QuranViewState extends State<_QuranView> {
       ),
     );
   }
+
+  QuranLastRead? _validLastRead(
+    QuranLastRead? position,
+    QuranBrowseProvider browse,
+  ) {
+    if (position == null || browse.status != QuranBrowseStatus.ready) {
+      return null;
+    }
+    final surah = browse.surah(position.surahNumber);
+    if (surah == null || position.ayahNumber > (surah.ayahCount ?? 0)) {
+      return null;
+    }
+    return browse.juzFor(position.surahNumber, position.ayahNumber) ==
+            position.juzNumber
+        ? position
+        : null;
+  }
+
+  void _openReader(QuranBrowseItem surah, int ayah) {
+    final juz = context.read<QuranBrowseProvider>().juzFor(
+      surah.surahNumber,
+      ayah,
+    );
+    if (juz == null) return;
+    context.read<QuranLastReadProvider>().update(
+      QuranLastRead(
+        surahNumber: surah.surahNumber,
+        ayahNumber: ayah,
+        juzNumber: juz,
+      ),
+    );
+    setState(() => _readingPosition = (surah: surah, ayah: ayah));
+  }
 }
 
 class _LastReadCard extends StatelessWidget {
-  const _LastReadCard({required this.onContinue});
+  const _LastReadCard({
+    required this.position,
+    required this.surahTitle,
+    required this.onContinue,
+  });
 
+  final QuranLastRead position;
+  final String surahTitle;
   final VoidCallback onContinue;
 
   @override
@@ -237,7 +275,7 @@ class _LastReadCard extends StatelessWidget {
             ),
             const SizedBox(height: 6),
             Text(
-              'Al-Kahf',
+              surahTitle,
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -246,7 +284,10 @@ class _LastReadCard extends StatelessWidget {
             ),
             const SizedBox(height: 2),
             Text(
-              l10n.quranReadingPosition(10, 15),
+              l10n.quranReadingPosition(
+                position.ayahNumber,
+                position.juzNumber,
+              ),
               style: GoogleFonts.plusJakartaSans(
                 fontSize: 12,
                 color: colors.gold,
@@ -877,77 +918,97 @@ class _QuranReader extends StatelessWidget {
                                 a.surahNumber,
                                 a.ayahNumber,
                               );
-                              return Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                              return GestureDetector(
+                                key: ValueKey(
+                                  'ayah-${a.surahNumber}-${a.ayahNumber}',
                                 ),
-                                decoration: BoxDecoration(
-                                  border: Border(
-                                    bottom: BorderSide(color: c.hairline),
+                                onTap: () {
+                                  final juz = context
+                                      .read<QuranBrowseProvider>()
+                                      .juzFor(a.surahNumber, a.ayahNumber);
+                                  if (juz == null) return;
+                                  context.read<QuranLastReadProvider>().update(
+                                    QuranLastRead(
+                                      surahNumber: a.surahNumber,
+                                      ayahNumber: a.ayahNumber,
+                                      juzNumber: juz,
+                                    ),
+                                  );
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
                                   ),
-                                ),
-                                child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.stretch,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Container(
-                                          width: 28,
-                                          height: 28,
-                                          decoration: BoxDecoration(
-                                            shape: BoxShape.circle,
-                                            color: c.goldSoft,
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '${a.ayahNumber}',
-                                              style:
-                                                  GoogleFonts.plusJakartaSans(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w700,
-                                                    color: c.goldDeep,
-                                                  ),
+                                  decoration: BoxDecoration(
+                                    border: Border(
+                                      bottom: BorderSide(color: c.hairline),
+                                    ),
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.stretch,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Container(
+                                            width: 28,
+                                            height: 28,
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              color: c.goldSoft,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                '${a.ayahNumber}',
+                                                style:
+                                                    GoogleFonts.plusJakartaSans(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                      color: c.goldDeep,
+                                                    ),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                        const Spacer(),
-                                        IconButton(
-                                          key: ValueKey(
-                                            'ayah-bookmark-${a.surahNumber}-${a.ayahNumber}',
+                                          const Spacer(),
+                                          IconButton(
+                                            key: ValueKey(
+                                              'ayah-bookmark-${a.surahNumber}-${a.ayahNumber}',
+                                            ),
+                                            onPressed: () =>
+                                                bookmarks.toggleAyah(
+                                                  a.surahNumber,
+                                                  a.ayahNumber,
+                                                ),
+                                            icon: Icon(
+                                              bookmarked
+                                                  ? Icons.bookmark_rounded
+                                                  : Icons
+                                                        .bookmark_outline_rounded,
+                                              color: c.inkMuted,
+                                              size: 20,
+                                            ),
                                           ),
-                                          onPressed: () => bookmarks.toggleAyah(
-                                            a.surahNumber,
-                                            a.ayahNumber,
-                                          ),
-                                          icon: Icon(
-                                            bookmarked
-                                                ? Icons.bookmark_rounded
-                                                : Icons
-                                                      .bookmark_outline_rounded,
-                                            color: c.inkMuted,
-                                            size: 20,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 12),
-                                    AppArabicText(
-                                      text: a.arabic,
-                                      fontSize: 26,
-                                      color: c.ink,
-                                      height: 2.2,
-                                    ),
-                                    const SizedBox(height: 10),
-                                    Text(
-                                      a.translation,
-                                      style: GoogleFonts.plusJakartaSans(
-                                        fontSize: 13.5,
-                                        height: 1.6,
-                                        color: c.inkSoft,
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                      const SizedBox(height: 12),
+                                      AppArabicText(
+                                        text: a.arabic,
+                                        fontSize: 26,
+                                        color: c.ink,
+                                        height: 2.2,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        a.translation,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 13.5,
+                                          height: 1.6,
+                                          color: c.inkSoft,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               );
                             }).toList(),

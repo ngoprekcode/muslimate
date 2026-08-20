@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -139,9 +141,8 @@ void main() {
         harness.prayerProvider.coordinates!.latitude,
         closeTo(-6.9175, 1e-4),
       );
-      expect(find.text('Lokasi diperbarui'), findsOneWidget);
-
-      await settleSnackBar(tester);
+      // A successful refresh speaks through the row itself, not a snackbar.
+      expect(find.byType(SnackBar), findsNothing);
     });
 
     testWidgets('reports a failed refresh instead of failing silently', (
@@ -190,6 +191,40 @@ void main() {
       // The shared permission screen took over rather than a silent refresh.
       expect(harness.locationProvider.fetchCount, 0);
       expect(find.text('Akses lokasi diblokir'), findsOneWidget);
+    });
+
+    testWidgets('stops the spinner once the position resolves', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      useTallTestSurface(tester);
+      final harness = SettingsTestHarness(
+        permission: LocationPermissionState.granted,
+        locationState: LocationState.done,
+        address: 'Bandung, ID',
+        fetchResult: testPosition(),
+      );
+
+      // Hold the prayer reschedule open, standing in for the hundreds of
+      // alarm calls the real Android scheduler makes.
+      final reschedule = Completer<void>();
+      harness.scheduler.scheduleGate = reschedule;
+
+      await tester.pumpWidget(harness.build());
+      await tester.pump();
+
+      await tester.tap(find.text('Lokasi'));
+      await tester.pump();
+      await tester.pump();
+
+      // The reschedule is still running...
+      expect(harness.scheduler.scheduleCalls, 1);
+      expect(reschedule.isCompleted, isFalse);
+
+      // ...but the lookup is done, so the row must not still look busy.
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+      expect(find.text('Bandung, ID'), findsOneWidget);
+
+      reschedule.complete();
+      await tester.pumpAndSettle();
     });
 
     testWidgets('shows a not-set label before any location exists', (

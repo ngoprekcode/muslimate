@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:prayers_times/prayers_times.dart';
 import 'package:flutter/material.dart';
 import 'package:muslimate/features/prayer/data/prayer_notification_scheduler.dart';
@@ -145,7 +147,11 @@ class PrayerProvider extends ChangeNotifier {
       prefs.setDouble(_longitudeKey, lng),
     ]);
     _calculatePrayerTimes();
-    await _schedulePrayerNotifications();
+    // Rescheduling a month of alarms costs hundreds of platform channel round
+    // trips. Callers only need the coordinates and the recalculated prayer
+    // times, so let the scheduling settle on its own rather than holding their
+    // loading indicator open long after the location is known.
+    unawaited(_schedulePrayerNotifications());
   }
 
   Future<void> _schedulePrayerNotifications() async {

@@ -34,7 +34,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   /// Anchors the share sheet popover on iPad and macOS.
   final GlobalKey _shareRowKey = GlobalKey();
 
-  bool _isRefreshingLocation = false;
+  /// Drives the row spinner and guards re-entry. Prayer alarm rescheduling no
+  /// longer runs inside this window, so it ends when the location does.
+  bool _refreshInFlight = false;
 
   @override
   Widget build(BuildContext context) {
@@ -98,7 +100,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       _locationLabel(l10n, locationPermission.state, location),
                       false,
                       onTap: _handleLocationTap,
-                      isBusy: _isRefreshingLocation,
+                      isBusy: _refreshInFlight,
                     ),
                     _buildSettingsRow(
                       context,
@@ -295,24 +297,32 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _refreshLocation() async {
-    if (_isRefreshingLocation) return;
-    setState(() => _isRefreshingLocation = true);
+    if (_refreshInFlight) return;
+    setState(() => _refreshInFlight = true);
 
-    final l10n = AppLocalizations.of(context)!;
     final locationProvider = context.read<LocationProvider>();
+    final prayerProvider = context.read<PrayerProvider>();
     final position = await locationProvider.fetchLocation();
 
     if (position != null) {
-      await _updateDependentProviders(position, locationProvider.address);
+      await prayerProvider.updateLocation(
+        position.latitude,
+        position.longitude,
+        address: locationProvider.address,
+      );
     }
 
     if (!mounted) return;
-    setState(() => _isRefreshingLocation = false);
-    _showMessage(
-      position != null
-          ? l10n.settingsLocationUpdated
-          : l10n.prayerLocationRefreshFailed,
-    );
+    setState(() => _refreshInFlight = false);
+    if (position == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context)!.prayerLocationRefreshFailed,
+          ),
+        ),
+      );
+    }
   }
 
   /// Resolves the address for [position] first so the prayer schedule shows the

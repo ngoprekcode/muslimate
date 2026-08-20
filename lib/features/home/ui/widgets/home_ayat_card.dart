@@ -8,7 +8,9 @@ import 'package:muslimate/shared/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
 class HomeAyatCard extends StatelessWidget {
-  const HomeAyatCard({super.key});
+  const HomeAyatCard({super.key, required this.onOpenQuran});
+
+  final VoidCallback onOpenQuran;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class HomeAyatCard extends StatelessWidget {
           AppSectionTitle(
             title: l10n.homeDailyVerseTitle,
             action: l10n.homeDailyVerseSeeAll,
-            onAction: () => Navigator.of(context).pushNamed('/quran'),
+            onAction: onOpenQuran,
           ),
           AppCard(
             padding: const EdgeInsets.all(18),

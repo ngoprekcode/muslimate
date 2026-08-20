@@ -52,7 +52,7 @@ class SettingsTestHarness {
 
   late final PrayerProvider prayerProvider;
 
-  Widget build({Locale locale = const Locale('id')}) {
+  Widget build({Locale locale = const Locale('id'), Widget? home}) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<SettingsProvider>.value(value: settingsProvider),
@@ -76,7 +76,7 @@ class SettingsTestHarness {
           GlobalCupertinoLocalizations.delegate,
         ],
         supportedLocales: const [Locale('en'), Locale('id')],
-        home: SettingsScreen(externalActions: actions),
+        home: home ?? SettingsScreen(externalActions: actions),
       ),
     );
   }

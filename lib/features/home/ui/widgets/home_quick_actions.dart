@@ -5,7 +5,14 @@ import 'package:muslimate/generated/assets/assets.gen.dart';
 import 'package:muslimate/shared/widgets/widgets.dart';
 
 class HomeQuickActions extends StatelessWidget {
-  const HomeQuickActions({super.key});
+  const HomeQuickActions({
+    super.key,
+    required this.onOpenPrayerSchedule,
+    required this.onOpenQuran,
+  });
+
+  final VoidCallback onOpenPrayerSchedule;
+  final VoidCallback onOpenQuran;
 
   static const _quickActions = [
     _QuickAction('quran', "Al-Qur'an", Icons.menu_book_outlined),
@@ -35,7 +42,13 @@ class HomeQuickActions extends StatelessWidget {
             mainAxisSpacing: 10,
             childAspectRatio: 0.9,
             children: _quickActions
-                .map((qa) => _QuickActionButton(action: qa))
+                .map(
+                  (qa) => _QuickActionButton(
+                    action: qa,
+                    onOpenPrayerSchedule: onOpenPrayerSchedule,
+                    onOpenQuran: onOpenQuran,
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -46,7 +59,14 @@ class HomeQuickActions extends StatelessWidget {
 
 class _QuickActionButton extends StatelessWidget {
   final _QuickAction action;
-  const _QuickActionButton({required this.action});
+  final VoidCallback onOpenPrayerSchedule;
+  final VoidCallback onOpenQuran;
+
+  const _QuickActionButton({
+    required this.action,
+    required this.onOpenPrayerSchedule,
+    required this.onOpenQuran,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +120,7 @@ class _QuickActionButton extends StatelessWidget {
   void _navigate(BuildContext context, String id) {
     switch (id) {
       case 'quran':
-        Navigator.of(context).pushNamed('/quran');
+        onOpenQuran();
         break;
       case 'qibla':
         Navigator.of(context).pushNamed('/qibla');
@@ -113,7 +133,7 @@ class _QuickActionButton extends StatelessWidget {
       //   Navigator.of(context).pushNamed('/hadith');
       //   break;
       case 'schedule':
-        Navigator.of(context).pushNamed('/prayer-schedule');
+        onOpenPrayerSchedule();
         break;
       case 'asmaul':
         Navigator.of(context).pushNamed('/asmaul-husna');

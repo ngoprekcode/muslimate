@@ -263,5 +263,10 @@
   "settingsEmailFailed": "No email app could be opened.",
   "settingsShareFailed": "The share sheet could not be opened.",
   "settingsFooter": "Muslimate v{version} • built with ♥",
-  "@settingsFooter": {"placeholders": {"version": {"type": "String"}}}
+  "@settingsFooter": {"placeholders": {"version": {"type": "String"}}},
+
+  "exitAppTitle": "Exit Muslimate?",
+  "exitAppMessage": "Are you sure you want to exit the app?",
+  "exitAppCancel": "Cancel",
+  "exitAppConfirm": "Exit"
 }

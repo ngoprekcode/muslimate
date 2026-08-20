@@ -19,10 +19,21 @@ void main() {
   }
 
   testWidgets('home hides non-MVP actions and notifications', (tester) async {
+    var prayerScheduleOpened = false;
+    var quranOpened = false;
+
     await tester.pumpWidget(
       testApp(
-        const SingleChildScrollView(
-          child: Column(children: [HomeTopBar(), HomeQuickActions()]),
+        SingleChildScrollView(
+          child: Column(
+            children: [
+              const HomeTopBar(),
+              HomeQuickActions(
+                onOpenPrayerSchedule: () => prayerScheduleOpened = true,
+                onOpenQuran: () => quranOpened = true,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -35,6 +46,12 @@ void main() {
     expect(find.text('Kiblat'), findsOneWidget);
     expect(find.text('Jadwal'), findsOneWidget);
     expect(find.text("Asma'ul"), findsOneWidget);
+
+    await tester.tap(find.text("Al-Qur'an"));
+    await tester.tap(find.text('Jadwal'));
+
+    expect(quranOpened, isTrue);
+    expect(prayerScheduleOpened, isTrue);
   });
 
   testWidgets('bottom navigation hides Wirid without breaking remaining tabs', (

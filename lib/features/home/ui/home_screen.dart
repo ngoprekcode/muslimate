@@ -16,10 +16,14 @@ import 'widgets/home_top_bar.dart';
 class HomeScreen extends StatelessWidget {
   const HomeScreen({
     super.key,
+    required this.onOpenPrayerSchedule,
+    required this.onOpenQuran,
     this.dailyVerseRepository,
     this.dailyVerseStore,
   });
 
+  final VoidCallback onOpenPrayerSchedule;
+  final VoidCallback onOpenQuran;
   final QuranBrowseRepository? dailyVerseRepository;
   final DailyVerseStore? dailyVerseStore;
 
@@ -34,13 +38,22 @@ class HomeScreen extends StatelessWidget {
             AssetQuranBrowseRepository(languageCode: languageCode),
         store: dailyVerseStore ?? SharedPreferencesDailyVerseStore(),
       )..load(),
-      child: const _HomeView(),
+      child: _HomeView(
+        onOpenPrayerSchedule: onOpenPrayerSchedule,
+        onOpenQuran: onOpenQuran,
+      ),
     );
   }
 }
 
 class _HomeView extends StatelessWidget {
-  const _HomeView();
+  const _HomeView({
+    required this.onOpenPrayerSchedule,
+    required this.onOpenQuran,
+  });
+
+  final VoidCallback onOpenPrayerSchedule;
+  final VoidCallback onOpenQuran;
 
   @override
   Widget build(BuildContext context) {
@@ -50,18 +63,21 @@ class _HomeView extends StatelessWidget {
       backgroundColor: c.bg,
       body: SafeArea(
         child: ListView(
-          children: const [
-            HomeTopBar(),
-            SizedBox(height: 16),
-            HomeHeader(),
-            SizedBox(height: 16),
-            HomePrayerRail(),
-            SizedBox(height: 16),
-            HomeQuickActions(),
-            HomeAyatCard(),
+          children: [
+            const HomeTopBar(),
+            const SizedBox(height: 16),
+            const HomeHeader(),
+            const SizedBox(height: 16),
+            const HomePrayerRail(),
+            const SizedBox(height: 16),
+            HomeQuickActions(
+              onOpenPrayerSchedule: onOpenPrayerSchedule,
+              onOpenQuran: onOpenQuran,
+            ),
+            HomeAyatCard(onOpenQuran: onOpenQuran),
             // Hidden for SCRUM-5. Restore when Hadith returns to the MVP UI.
             // HomeHadistSlider(),
-            SizedBox(height: 12),
+            const SizedBox(height: 12),
           ],
         ),
       ),

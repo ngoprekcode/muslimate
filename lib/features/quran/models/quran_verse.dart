@@ -4,6 +4,7 @@ class QuranVerse {
     required this.surahNumber,
     required this.ayahNumber,
     required this.arabic,
+    required this.transliteration,
     required this.translation,
   });
 
@@ -11,9 +12,11 @@ class QuranVerse {
   final int surahNumber;
   final int ayahNumber;
   final String arabic;
+  final String transliteration;
   final String translation;
 
   String get verseKey => '$surahNumber:$ayahNumber';
 
-  String get searchText => '$verseKey $arabic $translation'.toLowerCase();
+  String get searchText =>
+      '$verseKey $arabic $transliteration $translation'.toLowerCase();
 }

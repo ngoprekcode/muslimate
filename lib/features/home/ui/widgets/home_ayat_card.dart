@@ -77,6 +77,17 @@ class HomeAyatCard extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         Text(
+          verse.transliteration,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 13,
+            height: 1.55,
+            fontStyle: FontStyle.italic,
+            fontWeight: FontWeight.w500,
+            color: c.goldDeep,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
           verse.translation,
           style: GoogleFonts.plusJakartaSans(
             fontSize: 13,

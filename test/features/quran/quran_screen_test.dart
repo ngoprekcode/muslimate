@@ -95,6 +95,7 @@ void main() {
     );
 
     expect(find.text('7 ayat • Makkiyah'), findsOneWidget);
+    expect(find.text('Bismillaahir Rahmaanir Raheem'), findsOneWidget);
     expect(find.byIcon(Icons.bookmark_outline_rounded), findsWidgets);
     expect(find.byIcon(Icons.play_arrow_rounded), findsNothing);
   });
@@ -186,6 +187,19 @@ void main() {
       find.text("Tidak ada hasil penelusuran Al-Qur'an yang cocok."),
       findsOneWidget,
     );
+  });
+
+  testWidgets('searches and opens an ayah by transliteration', (tester) async {
+    await tester.pumpWidget(buildSubject());
+    await pumpUntilFound(tester, find.text('Al-Fatihah'));
+
+    await tester.enterText(find.byType(TextField), 'alhamdu lillaahi');
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 500)),
+    );
+    await pumpUntilFound(tester, find.text('Al-Fatihah 2'));
+
+    expect(find.text("Alhamdu lillaahi Rabbil 'aalameen"), findsOneWidget);
   });
 
   testWidgets('persists last read and continues at the exact saved ayah', (

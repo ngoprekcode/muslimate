@@ -51,6 +51,7 @@ void main() {
 
     expect(find.text('Ayat Hari Ini'), findsOneWidget);
     expect(find.text('arabic verse'), findsOneWidget);
+    expect(find.text('transliterated verse'), findsOneWidget);
     expect(find.text('translated verse'), findsOneWidget);
     expect(find.text('QS. Al-Fatihah : 2'), findsOneWidget);
 
@@ -82,6 +83,7 @@ class _CardRepository implements QuranBrowseRepository {
       surahNumber: 1,
       ayahNumber: 2,
       arabic: 'arabic verse',
+      transliteration: 'transliterated verse',
       translation: 'translated verse',
     ),
   ];

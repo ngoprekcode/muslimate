@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -225,6 +227,13 @@ class FakePrayerNotificationScheduler implements PrayerNotificationScheduler {
 
   final bool granted;
   int permissionRequests = 0;
+  int scheduleCalls = 0;
+
+  /// When set, [schedulePrayerNotifications] blocks until it completes, so a
+  /// test can hold the reschedule open and inspect the UI meanwhile. It stands
+  /// in for the hundreds of platform channel round trips the real Android
+  /// scheduler makes.
+  Completer<void>? scheduleGate;
 
   @override
   Future<bool> areNotificationsEnabled() async => granted;
@@ -244,7 +253,11 @@ class FakePrayerNotificationScheduler implements PrayerNotificationScheduler {
     required PrayerCalculationParameters calculationParameters,
     required int reminderMinutes,
     required Set<PrayerReminderType> enabledReminders,
-  }) async {}
+  }) async {
+    scheduleCalls++;
+    final gate = scheduleGate;
+    if (gate != null) await gate.future;
+  }
 }
 
 class _NoopLocationLocalDataSource implements LocationLocalDataSource {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:muslimate/generated/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
@@ -145,25 +146,74 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   int _currentTab = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    PrayerScheduleScreen(),
-    QuranScreen(
-      useSharedBookmarkProvider: true,
-      useSharedLastReadProvider: true,
-    ),
-    // Hidden for SCRUM-5. Restore this screen together with the Wirid tab.
-    // DhikrScreen(),
-    SettingsScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      HomeScreen(
+        onOpenPrayerSchedule: () => _selectTab(1),
+        onOpenQuran: () => _selectTab(2),
+      ),
+      const PrayerScheduleScreen(),
+      const QuranScreen(
+        useSharedBookmarkProvider: true,
+        useSharedLastReadProvider: true,
+      ),
+      // Hidden for SCRUM-5. Restore this screen together with the Wirid tab.
+      // DhikrScreen(),
+      const SettingsScreen(),
+    ];
+  }
+
+  void _selectTab(int index) {
+    if (_currentTab == index) return;
+    setState(() => _currentTab = index);
+  }
+
+  Future<void> _handleBack(bool didPop, Object? result) async {
+    if (didPop) return;
+
+    if (_currentTab != 0) {
+      _selectTab(0);
+      return;
+    }
+
+    final l10n = AppLocalizations.of(context)!;
+    final shouldExit = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.exitAppTitle),
+        content: Text(l10n.exitAppMessage),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.exitAppCancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.exitAppConfirm),
+          ),
+        ],
+      ),
+    );
+
+    if (!mounted || shouldExit != true) return;
+    await SystemNavigator.pop();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _currentTab, children: _screens),
-      bottomNavigationBar: AppBottomNavBar(
-        currentIndex: _currentTab,
-        onTap: (i) => setState(() => _currentTab = i),
+    return PopScope<Object?>(
+      canPop: false,
+      onPopInvokedWithResult: _handleBack,
+      child: Scaffold(
+        body: IndexedStack(index: _currentTab, children: _screens),
+        bottomNavigationBar: AppBottomNavBar(
+          currentIndex: _currentTab,
+          onTap: _selectTab,
+        ),
       ),
     );
   }

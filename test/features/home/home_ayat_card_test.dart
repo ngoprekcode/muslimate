@@ -26,6 +26,7 @@ void main() {
     );
     final bookmarkStore = _MemoryBookmarkStore();
     final bookmarks = QuranBookmarkProvider(bookmarkStore);
+    var quranOpened = false;
     await Future.wait([dailyVerse.load(), bookmarks.load()]);
 
     await tester.pumpWidget(
@@ -44,7 +45,9 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const Scaffold(body: HomeAyatCard()),
+          home: Scaffold(
+            body: HomeAyatCard(onOpenQuran: () => quranOpened = true),
+          ),
         ),
       ),
     );
@@ -54,6 +57,9 @@ void main() {
     expect(find.text('transliterated verse'), findsOneWidget);
     expect(find.text('translated verse'), findsOneWidget);
     expect(find.text('QS. Al-Fatihah : 2'), findsOneWidget);
+
+    await tester.tap(find.text('Lihat semua'));
+    expect(quranOpened, isTrue);
 
     await tester.tap(find.byTooltip('Tambahkan bookmark'));
     await tester.pump();

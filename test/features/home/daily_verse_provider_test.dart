@@ -15,6 +15,7 @@ void main() {
       surahNumber: 1,
       ayahNumber: 1,
       arabic: 'arabic one',
+      transliteration: 'transliteration one',
       translation: 'translation one',
     ),
     const QuranVerse(
@@ -22,6 +23,7 @@ void main() {
       surahNumber: 1,
       ayahNumber: 2,
       arabic: 'arabic two',
+      transliteration: 'transliteration two',
       translation: 'translation two',
     ),
   ];

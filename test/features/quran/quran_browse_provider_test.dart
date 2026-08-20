@@ -78,6 +78,18 @@ void main() {
       expect(provider.verseResults.first.verseKey, '1:2');
     });
 
+    test('searches Quran transliteration content', () async {
+      final provider = QuranBrowseProvider(
+        AssetQuranBrowseRepository(languageCode: 'id'),
+      );
+      await provider.load();
+
+      provider.search('alhamdu lillaahi');
+
+      expect(provider.verseResults, isNotEmpty);
+      expect(provider.verseResults.first.verseKey, '1:2');
+    });
+
     test('resolves the exact juz at Quran boundaries', () async {
       final provider = QuranBrowseProvider(
         AssetQuranBrowseRepository(languageCode: 'id'),
@@ -107,6 +119,17 @@ void main() {
       expect(
         english.versesForSurah(1).first.translation,
         startsWith('In the name of Allāh'),
+      );
+      expect(
+        indonesian.versesForSurah(1).first.transliteration,
+        english.versesForSurah(1).first.transliteration,
+      );
+      expect(indonesian.versesForSurah(1).first.transliteration, isNotEmpty);
+      expect(
+        indonesian
+            .versesForSurah(1)
+            .every((verse) => verse.transliteration.isNotEmpty),
+        isTrue,
       );
     });
   });

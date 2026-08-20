@@ -606,6 +606,18 @@ class _VerseSearchResult extends StatelessWidget {
                     ),
                   ),
                   Text(
+                    verse.transliteration,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11.5,
+                      fontStyle: FontStyle.italic,
+                      fontWeight: FontWeight.w500,
+                      color: colors.goldDeep,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
                     verse.translation,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -999,6 +1011,17 @@ class _QuranReader extends StatelessWidget {
                                         height: 2.2,
                                       ),
                                       const SizedBox(height: 10),
+                                      Text(
+                                        a.transliteration,
+                                        style: GoogleFonts.plusJakartaSans(
+                                          fontSize: 13.5,
+                                          height: 1.6,
+                                          fontStyle: FontStyle.italic,
+                                          fontWeight: FontWeight.w500,
+                                          color: c.goldDeep,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
                                       Text(
                                         a.translation,
                                         style: GoogleFonts.plusJakartaSans(
